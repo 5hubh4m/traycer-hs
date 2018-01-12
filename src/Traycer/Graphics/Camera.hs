@@ -50,7 +50,7 @@ pixel2Pos camera (V2 x y)
     x > camera^.windowDim^._x ||
     y > camera^.windowDim^._y  = error "Pixel coordinates out-of-bounds."
   | otherwise                  = V3 (xscale * fromIntegral x - (camera^.windowSize^._x / 2))
-                                    (yscale * fromIntegral y - (camera^.windowSize^._y / 2))
+                                    ((camera^.windowSize^._y / 2) - yscale * fromIntegral y)
                                     0
   where
     xscale = camera^.windowSize^._x / fromIntegral (camera^.windowDim^._x)

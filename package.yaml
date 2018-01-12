@@ -23,7 +23,7 @@ dependencies:
 - array
 - lens
 - repa
-- repa-io
+- JuicyPixels
 - yaml
 - linear
 - random
@@ -32,7 +32,7 @@ library:
   source-dirs: src
 
 executables:
-  traycer-hs-exe:
+  traycer-hs:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
