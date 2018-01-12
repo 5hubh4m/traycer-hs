@@ -1,0 +1,9 @@
+.stack-work/
+traycer-hs.cabal
+*~
+*/*~
+#*#
+*/#*#
+.DS_Store
+*/.DS_Store
+.idea

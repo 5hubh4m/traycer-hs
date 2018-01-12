@@ -1,0 +1,65 @@
+name:                traycer-hs
+version:             0.1.0.0
+github:              5hubh4m/traycer-hs
+license:             MIT
+author:              Shubham Chaudhary
+maintainer:          shubhamchaudhary1996@gmail.com
+copyright:           © 2017, Shubham Chaudhary
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+synopsis:            A ray-tracing library in pure Haskell.
+category:            geometry, graphics, ray-tracing, rendering
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on Github at <https://github.com/5hubh4m/traycer-hs#readme>
+
+dependencies:
+- base
+- array
+- lens
+- repa
+- repa-io
+- yaml
+- linear
+- random
+
+library:
+  source-dirs: src
+
+executables:
+  traycer-hs-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Odph
+    - -rtsopts
+    - -threaded
+    - -fno-liberate-case
+    - -funfolding-use-threshold1000
+    - -funfolding-keeness-factor1000
+    - -funbox-strict-fields
+    - -fllvm
+    - -optlo-O3
+    - -pgmlo opt-3.7
+    - -pgmlc llc-3.7
+    dependencies:
+    - traycer-hs
+
+tests:
+  traycer-hs-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - traycer-hs

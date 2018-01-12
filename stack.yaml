@@ -1,0 +1,7 @@
+flags: {}
+packages:
+- .
+extra-deps:
+- repa-3.4.1.3
+- repa-io-3.4.1.1
+resolver: lts-9.18
