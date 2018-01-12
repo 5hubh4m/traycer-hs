@@ -15,6 +15,9 @@ module Traycer.Graphics.Texture
   ) where
 
 import Traycer.Graphics.Color
+import Traycer.Graphics.Light
+import Traycer.Geometry.Solid
+import Traycer.Geometry.Ray
 import Control.Lens
 
 data Texture a = Diffuse { _color :: !(Color a)

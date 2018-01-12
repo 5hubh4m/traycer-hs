@@ -48,8 +48,6 @@ executables:
     - -funbox-strict-fields
     - -fllvm
     - -optlo-O3
-    - -pgmlo opt-3.7
-    - -pgmlc llc-3.7
     dependencies:
     - traycer-hs
 

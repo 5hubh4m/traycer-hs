@@ -40,19 +40,21 @@ config2Image c name = do
           R.:. (c^.camera^.windowDim^._y)
           R.:. (c^.camera^.windowDim^._x)
         ) 
-        (\(R.Z R.:. y R.:. x) -> let eyePos = c^.camera^.eye
+        (\(R.Z R.:. y R.:. x) -> let (V2 w h) = pixelSize $ c^.camera
+                                     eyePos = c^.camera^.eye
                                      pixelPos = pixel2Pos (c^.camera) (V2 x y)
                                      primaryRay = eyePos --> pixelPos $ 1
                                      aimedPoint = primaryRay *-> (c^.camera^.focalLength)
-                                     eyePosSamples = map ((+ eyePos) . (\(m, n) -> V3 m n 0)) [(0, 0)]
-                                                    -- zip (take 10 $ randomRs (0 :: Double, 1) gen)
-                                                    --     (take 10 $ randomRs (0 :: Double, 1) gen)
-                                     (V2 w h) = pixelSize $ c^.camera
-                                     antiAliasingSamples = map ((+ aimedPoint) . (\(m, n) -> V3 m n 0)) $
-                                                           zip (take 5 $ randomRs (0, w) gen)
-                                                               (take 5 $ randomRs (0, h) gen)
+                                     eyePosSamples = map ((+ eyePos) . (\(m, n) -> V3 (w * m) (h * n) 0)) $
+                                                     list2Zip $ take 50 $ randomRs (-1 :: Double, 1) gen
+                                     antiAliasingSamples = map ((+ aimedPoint) . (\(m, n) -> V3 (w * m) (h * n) 0)) $
+                                                           list2Zip $ take 20 $ randomRs (0, w) gen
                                      eyeRays = [p --> t $ 1 | p <- eyePosSamples, t <- antiAliasingSamples]
                                      pixelColor = toRGB $ sum (map (trace c) eyeRays) /
                                                   fromIntegral (length antiAliasingSamples * length eyePosSamples)
                                  in (pixelColor^.r, pixelColor^.g, pixelColor^.b))
   writeImageToBMP name im
+    where
+      list2Zip [] = []
+      list2Zip (x1:x2:xs) = (x1, x2) : list2Zip xs
+      list2Zip _ = error "Odd length list"
