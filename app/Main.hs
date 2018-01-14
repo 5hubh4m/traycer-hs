@@ -10,7 +10,16 @@ import qualified Data.ByteString as B
 
 main :: IO ()
 main = do
-  (filePath:imageName:_) <- getArgs
+  args <- getArgs
+  let (filePath, imageName) = if length args >= 2
+                              then (head args, args !! 1)
+                              else error "Please give atleast two arguments."
+  putStrLn
+    $ "Rendering "
+    ++ filePath
+    ++ " as "
+    ++ imageName
+    ++ "."
   gen <- getStdGen
   contents <- B.readFile filePath
   let config = decode contents :: Maybe (Config Double Int)
@@ -25,4 +34,4 @@ main = do
         ++ ", saved to "
         ++ show imageName
         ++ "."
-    Nothing -> putStrLn "An error has occured, check your config file or args."
+    Nothing -> error "Unable to parse config file."

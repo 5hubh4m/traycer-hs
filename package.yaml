@@ -19,6 +19,8 @@ category:            geometry, graphics, ray-tracing, rendering
 description:         Please see the README on Github at <https://github.com/5hubh4m/traycer-hs#readme>
 
 dependencies:
+- aeson
+- vector
 - base
 - bytestring
 - time

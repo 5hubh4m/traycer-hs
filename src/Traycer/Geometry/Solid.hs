@@ -39,16 +39,20 @@ data Solid a = Plane { _center :: !(V3 a)  -- ^ Any point that passes through th
 makeLenses ''Solid
 
 -- Contructors
-mkSphere :: V3 a -> a -> Solid a
-mkSphere = Sphere
+mkSphere :: (Num a, Ord a) => V3 a -> a -> Solid a
+mkSphere c r
+  | r < 0     = error "Negative radius for sphere."
+  | otherwise = Sphere c r
 {-# INLINE mkSphere #-}
 
 mkPlane :: (Floating a, Epsilon a) => V3 a -> V3 a -> Solid a
 mkPlane c n = Plane c $ normalize n
 {-# INLINE mkPlane #-}
 
-mkDisk :: (Floating a, Epsilon a) => V3 a -> V3 a -> a -> Solid a
-mkDisk c n = Disk c (normalize n)
+mkDisk :: (Floating a, Epsilon a, Ord a) => V3 a -> V3 a -> a -> Solid a
+mkDisk c n r
+  | r < 0     = error "Negative radius for disk."
+  | otherwise = Disk c (normalize n) r
 {-# INLINE mkDisk #-}
 
 -- | Solid type class,

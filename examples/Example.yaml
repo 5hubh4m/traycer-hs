@@ -1,58 +1,54 @@
-_bodies:
-  - _solid:
+bodies:
+  - solid:
       tag: Sphere
-      _center:
+      center:
       - 0
       - 1
       - 7
-      _radius: 0.5
-    _texture:
+      radius: 1
+    texture:
       tag: Diffuse
-      _albedo:
-        _color:
-        - 1
-        - 0
-        - 0
-      _kAmbient: 0.1
-      _kDiffuse: 0.99
-      _kSpecular: 0.2
-      _specularExponent: 10
-_lights:
-  - _intensity:
-      _color:
+      albedo:
       - 1
-      - 1
-      - 1
-    _position:
+      - 0
+      - 0
+      kAmbient: 0.05
+      kDiffuse: 0.99
+      kSpecular: 0.2
+      specularExponent: 10
+lights:
+  - intensity:
+    - 1
+    - 1
+    - 1
+    position:
     - -10
     - 20
     - 5
-  - _intensity:
-      _color:
-      - 1
-      - 1
-      - 1
-    _position:
+  - intensity:
+    - 1
+    - 1
+    - 1
+    position:
     - 10
     - 20
     - -5
-_camera:
-  _focalLength: 7
-  _windowSize:
+camera:
+  focalLength: 7
+  windowSize:
   - 8
   - 4
-  _windowDim:
+  windowDim:
   - 800
   - 400
-  _eye:
+  eye:
   - 0
   - 0
   - -10
-_ambient:
-  _color:
-  - 0
-  - 0.3
-  - 0.7
-_depth: 10
-_aaSamples: 4
-_dofSamples: 25
+ambient:
+- 0
+- 0.74
+- 1
+depth: 10
+aaSamples: 4
+dofSamples: 25
