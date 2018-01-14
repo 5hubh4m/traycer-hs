@@ -4,7 +4,9 @@ A ray-tracer written in Haskell.
 
 ## How to use
 
-Define the world by making an object of the `Config` class. Call `config2Image` on it with a file name in the `IO` monad. It will produce a `.png`. An example is given in `app/Main.hs`.
+Define the world by making a config file (`examples/Example.yaml`), and run the program as follows
+
+`stack exec traycer-hs -- PATH_TO_CONFIG PATH_TO_IMAGE.png`
 
 ### Example
 

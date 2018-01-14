@@ -1,4 +1,6 @@
-{-# LANGUAGE TemplateHaskell, ExistentialQuantification #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Traycer.Config
   ( Config
@@ -13,6 +15,7 @@ module Traycer.Config
   ) where
 
 import Control.Lens
+import GHC.Generics
 import Traycer.Graphics.Body
 import Traycer.Graphics.Light
 import Traycer.Graphics.Camera
@@ -26,7 +29,7 @@ data Config a b = Config { _bodies :: ![Body a]     -- ^ 'Bodies' in the scene
                          , _aaSamples :: !b         -- ^ Anti-alisasing supersampling amount
                          , _dofSamples :: !b        -- ^ Depth of field samplinfg amount
                          }
-                deriving (Show)
+                deriving (Show, Read, Generic)
 
 makeLenses ''Config
 

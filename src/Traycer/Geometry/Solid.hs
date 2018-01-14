@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Traycer.Geometry.Solid
   ( Solid
@@ -16,12 +17,12 @@ module Traycer.Geometry.Solid
   ) where
 
 import Control.Lens
+import GHC.Generics
 import Linear.Epsilon
 import Linear.Metric
 import Linear.V3
 import Traycer.Geometry.Ray
 import Traycer.Math.Misc
-
 
 data Solid a = Plane { _center :: !(V3 a)  -- ^ Any point that passes through the plane
                      , _normal :: !(V3 a) -- ^ The normal `vector` should always be normalised
@@ -33,7 +34,7 @@ data Solid a = Plane { _center :: !(V3 a)  -- ^ Any point that passes through th
                     , _normal :: !(V3 a) -- ^ The normal `vector` should always be normalised
                     , _radius :: !a      -- ^ Radius of the disk
                     }
-             deriving (Show, Eq)
+             deriving (Show, Read, Eq, Generic)
 
 makeLenses ''Solid
 

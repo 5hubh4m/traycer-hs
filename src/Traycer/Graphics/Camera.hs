@@ -1,4 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Traycer.Graphics.Camera
   ( Camera
@@ -11,6 +12,7 @@ module Traycer.Graphics.Camera
   , pixel2Pos
   ) where
 
+import GHC.Generics
 import Control.Lens
 import Linear.V3
 import Linear.V2
@@ -20,7 +22,7 @@ data Camera a b = Camera { _eye :: !(V3 a)         -- ^ Location of eye in the s
                          , _windowDim :: !(V2 b)   -- ^ Dimension of window in pixels
                          , _focalLength :: !a
                          }
-                deriving (Show, Eq)
+                deriving (Show, Read, Eq, Generic)
 
 makeLenses ''Camera
 

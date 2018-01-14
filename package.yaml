@@ -20,6 +20,8 @@ description:         Please see the README on Github at <https://github.com/5hub
 
 dependencies:
 - base
+- bytestring
+- time
 - array
 - lens
 - repa

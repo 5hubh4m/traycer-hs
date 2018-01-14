@@ -1,6 +1,12 @@
+{-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TemplateHaskell            #-}
+
 module Traycer.Graphics.Color
   ( Color
+  , color
   , mkColor
+  , fromV3
   , fromRGB
   , toRGB
   , r
@@ -15,21 +21,34 @@ module Traycer.Graphics.Color
   ) where
 
 import Linear.V3
+import GHC.Generics
 import Control.Lens
 import Data.Word
 
-type Color a = V3 a
+newtype Color a = Color { _color :: V3 a }
+                deriving ( Show,
+                           Read,
+                           Eq,
+                           Ord,
+                           Functor,
+                           Num,
+                           Fractional,
+                           Floating,
+                           Generic
+                         )
+
+makeLenses ''Color
 
 r :: Lens' (Color a) a
-r = _x
+r = color . _x
 {-# INLINE r #-}
 
 g :: Lens' (Color a) a 
-g = _y
+g = color ._y
 {-# INLINE g #-}
 
 b :: Lens' (Color a) a
-b = _z
+b = color ._z
 {-# INLINE b #-}
 
 mkColor :: (Num a, Ord a) => a -> a -> a -> Color a
@@ -40,8 +59,11 @@ mkColor m n o
     n > 1 ||
     o < 0 ||
     o > 1     = error "Invalid values of color coordinates."
-  | otherwise = V3 m n o
+  | otherwise = Color $ V3 m n o
 {-# INLINE mkColor #-}
+
+fromV3 :: (Num a, Ord a) => V3 a -> Color a
+fromV3 v = mkColor (v^._x) (v^._y) (v^._z)
 
 fromRGB :: (Num a, Ord a, Fractional a) => Word8 -> Word8 -> Word8 -> Color a
 fromRGB x y z = mkColor (f x) (f y) (f z)
@@ -73,6 +95,6 @@ _blue :: (Num a, Ord a) => Color a
 _blue = mkColor 0 0 1
 {-# INLINE _blue #-}
 
-clip :: (Num a, Ord a) => V3 a -> Color a
-clip = fmap (\x -> if x > 1 then 1 else if x < 0 then 0 else x)
+clip :: (Num a, Ord a) => Color a -> Color a
+clip c = Color $ (\x -> if x > 1 then 1 else if x < 0 then 0 else x) <$> (c^.color)
 {-# INLINE clip #-}

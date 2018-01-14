@@ -5,6 +5,7 @@ module Traycer.Graphics.RayTracing
 
 import Data.Foldable
 import Data.Function
+import Data.List
 import Data.Maybe
 import Control.Lens
 import Linear.Epsilon
@@ -44,16 +45,16 @@ trace config ray
   | otherwise          = case collide (config^.bodies) ray of
       Nothing     -> config ^.ambient
       Just (t, x) -> case x^.texture of
-        Diffuse c kd ks e -> phongColor
+        Diffuse c ka kd ks e -> phongColor
           where
-            phongColor = diffuseIllumination config c kd ks e (x^.solid) ray t
-        Reflective c kd ks e ref -> clip $ phongColor + reflColor
+            phongColor = diffuseIllumination config c ka kd ks e (x^.solid) ray t
+        Reflective c ka kd ks e ref -> clip $ phongColor + reflColor
           where
-            phongColor = diffuseIllumination config c kd ks e (x^.solid) ray t
+            phongColor = diffuseIllumination config c ka kd ks e (x^.solid) ray t
             (_, reflColor) = reflectedIllumination config ref (x^.solid) ray t
-        Transparent c kd ks e ref trs m -> clip $ phongColor + reflColor + refrColor
+        Transparent c ka kd ks e ref trs m -> clip $ phongColor + reflColor + refrColor
           where
-            phongColor = diffuseIllumination config c kd ks e (x^.solid) ray t
+            phongColor = diffuseIllumination config c ka kd ks e (x^.solid) ray t
             (config', reflColor) = reflectedIllumination config ref (x^.solid) ray t
             refrColor =
               if trs == 0
@@ -70,19 +71,23 @@ trace config ray
 
 diffuseIllumination
   :: (Num a, Epsilon a, Floating a, Ord a, Num b, Eq b)
-  => Config a b -> Color a -> a -> a -> a -> Solid a -> Ray a -> a
+  => Config a b -> Color a -> a -> a -> a -> a -> Solid a -> Ray a -> a
   -> Color a
-diffuseIllumination config c kd ks e x ray t = clip $ diffColor + specColor
+diffuseIllumination config c ka kd ks e x ray t = clip $ ambientColor + diffColor + specColor
   where
     p = ray *-> (t - epsilon)
     n = normalAt x ray t
   
     -- | Rays from the point of intersection to light sources
     shadowRays = map (\l -> (l, p --> (l^.position) $ 1)) $ config^.lights
-    lightRays = filter (isNothing . collide (config^.bodies) . snd) shadowRays
+    (lightRays, blockedRays) = partition (isNothing . collide (config^.bodies) . snd) shadowRays
     ls = map (\(l, lray) -> (l^.intensity, lray^.direction)) lightRays
-  
+    bs = map (\(l, lray) -> (l^.intensity, lray^.direction)) blockedRays
+    
     -- | Color of a diffuse surface using phong model
+    ambientColor = if ka == 0
+                   then 0
+                   else ka *^ ((config^.ambient) + sum (map fst bs))
     diffColor = if kd == 0
                 then 0
                 else kd *^ sum (map (\(i, d) -> c * i ^* dot n d) ls)

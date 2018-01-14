@@ -1,8 +1,10 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Traycer.Graphics.Texture
   ( Texture(..)
-  , color
+  , albedo
+  , kAmbient
   , kDiffuse
   , kSpecular
   , specularExponent
@@ -14,21 +16,25 @@ module Traycer.Graphics.Texture
   , mkTransparent
   ) where
 
+import GHC.Generics
 import Traycer.Graphics.Color
 import Control.Lens
 
-data Texture a = Diffuse { _color :: !(Color a)
+data Texture a = Diffuse { _albedo :: !(Color a)
+                         , _kAmbient :: !a
                          , _kDiffuse :: !a
                          , _kSpecular :: !a
                          , _specularExponent :: !a
                          }
-               | Reflective { _color :: !(Color a)
+               | Reflective { _albedo :: !(Color a)
+                            , _kAmbient :: !a
                             , _kDiffuse :: !a
                             , _kSpecular :: !a
                             , _specularExponent :: !a
                             ,_reflectance :: !a
                             }
-               | Transparent { _color :: !(Color a)
+               | Transparent { _albedo :: !(Color a)
+                             , _kAmbient :: !a
                              , _kDiffuse :: !a
                              , _kSpecular :: !a
                              , _specularExponent :: !a
@@ -36,34 +42,37 @@ data Texture a = Diffuse { _color :: !(Color a)
                              , _transparency :: !a
                              , _mu :: !a
                              }
-               deriving (Show, Eq)
+               deriving (Show, Read, Eq, Generic)
 
 makeLenses ''Texture
 
-mkDiffuse :: (Num a, Ord a) => Color a -> a -> a -> a -> Texture a
-mkDiffuse c kd ks n
+mkDiffuse :: (Num a, Ord a) => Color a -> a -> a -> a -> a -> Texture a
+mkDiffuse c ka kd ks n
+  | ka < 0 || 1 < ka = error "Invalid value for ambient coefficient."
   | kd < 0 || 1 < kd = error "Invalid value for diffuse coefficient."
   | ks < 0 || 1 < ks = error "Invalid value for specular coefficient."
   | n < 0            = error "Invalid value for specular exponent."
-  | otherwise        = Diffuse c kd ks n
+  | otherwise        = Diffuse c ka kd ks n
 {-# INLINE mkDiffuse #-}
 
-mkReflective :: (Num a, Ord a) => Color a -> a -> a -> a -> a -> Texture a
-mkReflective c kd ks n ref
+mkReflective :: (Num a, Ord a) => Color a -> a -> a -> a -> a -> a -> Texture a
+mkReflective c ka kd ks n ref
+  | ka < 0 || 1 < ka   = error "Invalid value for ambient coefficient."
   | kd < 0 || 1 < kd   = error "Invalid value for diffuse coefficient."
   | ks < 0 || 1 < ks   = error "Invalid value for specular coefficient."
   | n < 0              = error "Invalid value for specular exponent."
   | ref < 0 || 1 < ref = error "Invalid value for reflectance."
-  | otherwise = Reflective c kd ks n ref
+  | otherwise = Reflective c ka kd ks n ref
 {-# INLINE mkReflective #-}
 
-mkTransparent :: (Num a, Ord a) => Color a -> a -> a -> a -> a -> a -> a -> Texture a
-mkTransparent c kd ks n ref trs m
+mkTransparent :: (Num a, Ord a) => Color a -> a -> a -> a -> a -> a -> a -> a -> Texture a
+mkTransparent c ka kd ks n ref trs m
+  | ka < 0 || 1 < ka   = error "Invalid value for ambient coefficient."
   | kd < 0 || 1 < kd   = error "Invalid value for diffuse coefficient."
   | ks < 0 || 1 < ks   = error "Invalid value for specular coefficient."
   | n < 0              = error "Invalid value for specular exponent."
   | ref < 0 || 1 < ref = error "Invalid value for reflectance."
   | trs < 0 || 1 < trs = error "Invalid value for transparency."
   | m < 1              = error "Invalid value for refractive index."
-  | otherwise          = Transparent c kd ks n ref trs m 
+  | otherwise          = Transparent c ka kd ks n ref trs m 
 {-# INLINE mkTransparent #-}
