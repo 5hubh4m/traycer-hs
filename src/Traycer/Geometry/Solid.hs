@@ -23,7 +23,7 @@ import Linear.Epsilon
 import Linear.Metric
 import Linear.V3
 import Traycer.Geometry.Ray
-import Traycer.Math.Misc
+import Traycer.Math
 
 data Solid a = Plane { _center :: !(V3 a)  -- ^ Any point that passes through the plane
                      , _normal :: !(V3 a) -- ^ The normal `vector` should always be normalised

@@ -22,6 +22,8 @@ module Traycer.Graphics.Color
   ) where
 
 import Linear.V3
+import Linear.Epsilon
+import Traycer.Math
 import GHC.Generics
 import Control.Lens
 import Data.Word
@@ -32,9 +34,11 @@ newtype Color a = Color { _color :: V3 a }
                            Eq,
                            Ord,
                            Functor,
+                           Applicative,
                            Num,
                            Fractional,
                            Floating,
+                           Epsilon,
                            Generic
                          )
 
@@ -65,12 +69,12 @@ mkColor !m !n !o
 
 fromV3 :: (Num a, Ord a) => V3 a -> Color a
 fromV3 !v = mkColor (v^._x) (v^._y) (v^._z)
+{-# INLINE fromV3 #-}
 
 fromRGB :: (Num a, Ord a, Fractional a) => Word8 -> Word8 -> Word8 -> Color a
 fromRGB !x !y !z = mkColor (f x) (f y) (f z)
   where
     f !a = fromIntegral a / 255
-    {-# INLINE f #-}
 {-# INLINE fromRGB #-}
 
 toRGB :: (RealFrac a) => Color a -> Color Word8
@@ -101,8 +105,7 @@ clip :: (Num a, Ord a) => Color a -> Color a
 clip !c = Color $ f <$> (c^.color)
   where
     f !x
-      | x > 1     = 1
       | x < 0     = 0
+      | x > 1     = 1
       | otherwise = x
-    {-# INLINE f #-}
 {-# INLINE clip #-}

@@ -5,13 +5,12 @@ module Traycer.Graphics.RayTracing
 
 import Data.Foldable
 import Data.Function
-import Data.List
 import Data.Maybe
 import Control.Lens
 import Linear.Epsilon
 import Linear.Metric
 import Linear.Vector
-import Traycer.Math.Misc (epsilon, reflect)
+import Traycer.Math (epsilon, reflect)
 import Traycer.Graphics.Color
 import Traycer.Graphics.Body
 import Traycer.Graphics.Light
@@ -81,9 +80,9 @@ diffuseIllumination !config !c !ka !kd !ks !e !x !ray !t =
   
     -- | Rays from the point of intersection to light sources
     shadowRays = map (\l -> (l, p --> (l^.position) $ 1)) $ config^.lights
-    (lightRays, blockedRays) = partition (isNothing . collide (config^.bodies) . snd) shadowRays
+    lightRays = filter (isNothing . collide (config^.bodies) . snd) shadowRays
     ls = map (\(l, lray) -> (l^.intensity, lray^.direction)) lightRays
-    bs = map (\(l, lray) -> (l^.intensity, lray^.direction)) blockedRays
+    bs = map (\(l, lray) -> (l^.intensity, lray^.direction)) shadowRays
     
     -- | Color of a diffuse surface using phong model
     ambientColor = if ka == 0

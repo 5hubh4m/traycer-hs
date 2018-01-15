@@ -34,10 +34,10 @@ bodies:
       - 0
       - 0.3
       kAmbient: 0.1
-      kDiffuse: 0.7
-      kSpecular: 0.5
+      kDiffuse: 0.6
+      kSpecular: 0.4
       specularExponent: 8
-      reflectance: 0.7
+      reflectance: 0.6
   - solid:
       type: Sphere
       center:
@@ -149,21 +149,23 @@ bodies:
   - solid:
       type: Sphere
       center:
-      - 2.5
+      - 0.5
       - -0.5
       - 1
       radius: 0.5
     texture:
-      type: Reflective
+      type: Transparent
       albedo:
       - 0.7
       - 0.2
       - 0.2
-      kAmbient: 0.05
-      kDiffuse: 0.9
+      kAmbient: 0.01
+      kDiffuse: 0.1
       kSpecular: 0.1
-      specularExponent: 10
+      specularExponent: 20
       reflectance: 0.1
+      transparency: 0.9
+      mu: 1.7
 lights:
   - intensity:
     - 0.7
@@ -187,8 +189,8 @@ camera:
   - 6
   - 3
   windowDim:
-  - 1500
-  - 750
+  - 600
+  - 300
   eye:
   - 0
   - 0
@@ -197,6 +199,6 @@ ambient:
 - 0
 - 0.74
 - 1
-depth: 10
+depth: 4
 aaSamples: 9
 dofSamples: 9

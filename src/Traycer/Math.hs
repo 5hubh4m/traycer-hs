@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 
-module Traycer.Math.Misc
+module Traycer.Math
   ( quadratic
   , reflect
   , refract
