@@ -4,11 +4,11 @@ A ray-tracer written in Haskell.
 
 ## Building
 
-Install [haskell stack url](https://docs.haskellstack.org/en/stable/README/ "Haskell Stack"). `cd` to the project directory and
+Install [Haskell Stack](https://docs.haskellstack.org/en/stable/README/). `cd` to the project directory and
 
 `stack build`
 
-Make sure you have `opt`([llvm url](http://llvm.org "LLVM")) in your `$PATH`. If you don't want to build with `LLVM`, remove the `-fllvm` and `-optlo-O3` flags from `package.yaml`.
+Make sure you have `opt`([LLVM](http://llvm.org)) in your `$PATH`. If you don't want to build with `LLVM`, remove the `-fllvm` and `-optlo-O3` flags from `package.yaml`.
 
 ## Running
 
