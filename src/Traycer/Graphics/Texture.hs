@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric   #-}
+{-# LANGUAGE BangPatterns    #-}
 
 module Traycer.Graphics.Texture
   ( Texture(..)
@@ -47,7 +48,7 @@ data Texture a = Diffuse { _albedo :: !(Color a)
 makeLenses ''Texture
 
 mkDiffuse :: (Num a, Ord a) => Color a -> a -> a -> a -> a -> Texture a
-mkDiffuse c ka kd ks n
+mkDiffuse !c !ka !kd !ks !n
   | ka < 0 || 1 < ka = error "Invalid value for ambient coefficient."
   | kd < 0 || 1 < kd = error "Invalid value for diffuse coefficient."
   | ks < 0 || 1 < ks = error "Invalid value for specular coefficient."
@@ -56,7 +57,7 @@ mkDiffuse c ka kd ks n
 {-# INLINE mkDiffuse #-}
 
 mkReflective :: (Num a, Ord a) => Color a -> a -> a -> a -> a -> a -> Texture a
-mkReflective c ka kd ks n ref
+mkReflective !c !ka !kd !ks !n !ref
   | ka < 0 || 1 < ka   = error "Invalid value for ambient coefficient."
   | kd < 0 || 1 < kd   = error "Invalid value for diffuse coefficient."
   | ks < 0 || 1 < ks   = error "Invalid value for specular coefficient."
@@ -66,7 +67,7 @@ mkReflective c ka kd ks n ref
 {-# INLINE mkReflective #-}
 
 mkTransparent :: (Num a, Ord a) => Color a -> a -> a -> a -> a -> a -> a -> a -> Texture a
-mkTransparent c ka kd ks n ref trs m
+mkTransparent !c !ka !kd !ks !n !ref !trs m
   | ka < 0 || 1 < ka   = error "Invalid value for ambient coefficient."
   | kd < 0 || 1 < kd   = error "Invalid value for diffuse coefficient."
   | ks < 0 || 1 < ks   = error "Invalid value for specular coefficient."

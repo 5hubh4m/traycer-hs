@@ -1,12 +1,11 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings    #-}
 
 module Traycer.Parser
   where
 
 import Data.Yaml
 import Data.Aeson
-import Data.Foldable
 import Data.Vector((!))
 import Linear.V3
 import Linear.V2
@@ -37,36 +36,42 @@ instance (Num a, Ord a, FromJSON a) => FromJSON (Color a) where
             <*> parseJSON (arr ! 2)
   
 instance (Ord a, Floating a, Epsilon a, FromJSON a) => FromJSON (Solid a) where
-  parseJSON = withObject "Solid" $ \o -> asum [
-    mkSphere <$> o .: "center"
-             <*> o .: "radius",
-    mkPlane <$> o .: "center"
-            <*> o .: "normal",
-    mkDisk <$> o .: "center"
-           <*> o .: "normal"
-           <*> o .: "radius"]
+  parseJSON = withObject "Solid" $ \o -> do
+    typ <- o .: "type"
+    case typ of
+      "Sphere" -> mkSphere <$> o .: "center"
+                           <*> o .: "radius"
+      "Plane" -> mkPlane <$> o .: "center"
+                         <*> o .: "normal"
+      "Disk" -> mkDisk <$> o .: "center"
+                       <*> o .: "normal"
+                       <*> o .: "radius"
+      _ -> fail $ "Unknown solid: " ++ typ
 
 instance (Num a, Ord a, FromJSON a) => FromJSON (Texture a) where
-  parseJSON = withObject "Texture" $ \o -> asum [
-    mkDiffuse <$> o .: "albedo"
-              <*> o .: "kAmbient"
-              <*> o .: "kDiffuse"
-              <*> o .: "kSpecular"
-              <*> o .: "specularExponent",
-    mkReflective <$> o .: "albedo"
-                 <*> o .: "kAmbient"
-                 <*> o .: "kDiffuse"
-                 <*> o .: "kSpecular"
-                 <*> o .: "specularExponent"
-                 <*> o .: "reflectance",
-    mkTransparent <$> o .: "albedo"
-                  <*> o .: "kAmbient"
-                  <*> o .: "kDiffuse"
-                  <*> o .: "kSpecular"
-                  <*> o .: "specularExponent"
-                  <*> o .: "reflectance"
-                  <*> o .: "transparency"
-                  <*> o .: "mu"]
+  parseJSON = withObject "Texture" $ \o -> do
+    typ <- o .: "type"
+    case typ of
+      "Diffuse" -> mkDiffuse <$> o .: "albedo"
+                             <*> o .: "kAmbient"
+                             <*> o .: "kDiffuse"
+                             <*> o .: "kSpecular"
+                             <*> o .: "specularExponent"
+      "Reflective" -> mkReflective <$> o .: "albedo"
+                                   <*> o .: "kAmbient"
+                                   <*> o .: "kDiffuse"
+                                   <*> o .: "kSpecular"
+                                   <*> o .: "specularExponent"
+                                   <*> o .: "reflectance"
+      "Transparent" -> mkTransparent <$> o .: "albedo"
+                                     <*> o .: "kAmbient"
+                                     <*> o .: "kDiffuse"
+                                     <*> o .: "kSpecular"
+                                     <*> o .: "specularExponent"
+                                     <*> o .: "reflectance"
+                                     <*> o .: "transparency"
+                                     <*> o .: "mu"
+      _ -> fail $ "Unknown texture: " ++ typ
 
 instance (Num a, Ord a, FromJSON a) => FromJSON (Light a) where
   parseJSON = genericParseJSON parseOptions

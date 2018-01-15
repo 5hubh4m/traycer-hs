@@ -1,4 +1,5 @@
-{-# LANGUAGE TypeOperators, FlexibleContexts #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE BangPatterns  #-}
 
 module Traycer.Graphics.Rendering
   ( renderImage
@@ -6,11 +7,11 @@ module Traycer.Graphics.Rendering
 
 import Linear.V2
 import Linear.V3
+import Linear.Epsilon
 import Data.Word
 import Data.Array.Repa hiding (map)
 import Control.Lens
 import Codec.Picture
-import System.Random
 import Traycer.Config
 import Traycer.Graphics.Camera
 import Traycer.Graphics.Color
@@ -19,44 +20,62 @@ import Traycer.Geometry.Ray
 
 type RGB8 = (Word8, Word8, Word8)
 
-renderImage :: Config Double Int -> StdGen -> DynamicImage
-renderImage c gen = toImage
-                    $ runIdentity . computeUnboxedP
-                    $ transpose
-                    $ fromFunction (Z :. height :. width) $ pixelColor c gen
+renderImage :: (Floating a, RealFrac a, Enum a, Epsilon a, Ord a, Eq a, Integral b)
+            => Config a b -> DynamicImage
+renderImage !c = toImage
+                 $ runIdentity . computeP
+                 $ transpose
+                 $ fromFunction (Z :. height :. width) (pixelColor c)
   where
-    width = c^.camera^.windowDim^._x
-    height = c^.camera^.windowDim^._y
+    width = fromIntegral $ c^.camera^.windowDim^._x :: Int
+    height = fromIntegral $ c^.camera^.windowDim^._y :: Int
 {-# INLINE renderImage #-}
 
-pixelColor :: Config Double Int
-           -> StdGen
+uniformSamples :: (Enum a, Num a, Fractional a, Integral b) => (a, a) -> b -> [a]
+uniformSamples (l, u) n = map (* width) $ take (fromIntegral n) [1 ..]
+  where
+   width = (u - l) / (1 + fromIntegral n)
+{-# INLINE uniformSamples #-}
+
+apertureSamples :: (Enum a, Num a, Fractional a, Integral b)
+                => Config a b -> [V3 a]
+apertureSamples config = [V3 m n 0 | m <- xsamples, n <- ysamples]
+  where
+    (V2 w h) = pixelSize $ config^.camera
+    numSamples = ceiling $ sqrt (fromIntegral $ config^.dofSamples :: Double) :: Int
+    xsamples = uniformSamples (-3 * w, 3 * w) numSamples
+    ysamples = uniformSamples (-3 * h, 3 * h) numSamples
+{-# INLINE apertureSamples #-}
+
+antiAliasingSamples :: (Enum a, Num a, Fractional a, Integral b)
+                    => Config a b -> [V3 a] 
+antiAliasingSamples config = [V3 m n 0 | m <- xsamples, n <- ysamples]
+  where
+    (V2 w h) = pixelSize $ config^.camera
+    numSamples = ceiling $ sqrt (fromIntegral $ config^.aaSamples :: Double) :: Int
+    xsamples = uniformSamples (0, w) numSamples
+    ysamples = uniformSamples (-h, 0) numSamples
+{-# INLINE antiAliasingSamples #-}
+
+pixelColor :: (Floating a, RealFrac a, Enum a, Epsilon a, Ord a, Eq a, Integral b)
+           => Config a b
            -> DIM2
            -> RGB8
-pixelColor c gen (Z :. y :. x) = (pixel^.r, pixel^.g, pixel^.b)
+pixelColor !c (Z :. y :. x) = (pixel^.r, pixel^.g, pixel^.b)
   where
-    (V2 w h) = pixelSize $ c^.camera
     eyePos = c^.camera^.eye
-    pixelPos = pixel2Pos (c^.camera) (V2 x y)
+    pixelPos = pixel2Pos (c^.camera) (V2 (fromIntegral x) (fromIntegral y))
     primaryRay = eyePos --> pixelPos $ 1
     aimedPoint = primaryRay *-> (c^.camera^.focalLength)
-    eyePosSamples = map ((+ eyePos) . (\(m, n) -> V3 (w * m) (h * n) 0)) $
-                    list2Zip $ take (2 * c^.dofSamples) $ randomRs (-1, 1) gen
-    antiAliasingSamples = map ((+ aimedPoint) . (\(m, n) -> V3 (w * m) (h * n) 0)) $
-                          list2Zip $ take (2 * c^.aaSamples) $ randomRs (0, w) gen
-    eyeRays = [p --> t $ 1 | p <- eyePosSamples, t <- antiAliasingSamples]
+    eyePosSamples = map (+ eyePos) $ apertureSamples c
+    aaSuperSamples = map (+ aimedPoint) $ antiAliasingSamples c
+    eyeRays = [p --> t $ 1 | p <- eyePosSamples, t <- aaSuperSamples]
     pixel = toRGB $ sum (map (trace c) eyeRays) /
-                    fromIntegral (length antiAliasingSamples * length eyePosSamples)
+                    fromIntegral (length aaSuperSamples * length eyePosSamples)
 {-# INLINE pixelColor #-}
 
-list2Zip :: [a] -> [(a, a)]
-list2Zip [] = []
-list2Zip (x1:x2:xs) = (x1, x2) : list2Zip xs
-list2Zip _ = error "Odd length list"
-{-# INLINE list2Zip #-}
-
 toImage :: Array U DIM2 RGB8 -> DynamicImage
-toImage a = ImageRGB8 $ generateImage gen width height
+toImage !a = ImageRGB8 $ generateImage gen width height
   where
     Z :. width :. height = extent a
     gen x y =

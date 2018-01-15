@@ -1,5 +1,5 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
-
+{-# LANGUAGE BangPatterns        #-}
 module Traycer.Graphics.RayTracing
   ( trace ) where
 
@@ -25,13 +25,13 @@ collide :: (Epsilon a, Floating a, Ord a)
         => [Body a]
         -> Ray a
         -> Maybe (a, Body a)
-collide bs ray
+collide !bs !ray
   | null ts   = Nothing
   | otherwise = Just $ minimumBy (compare `on` fst) ts
   where
-    ts =  map (_1%~fromMaybe 0)
-          $ filter (isJust . fst)
-          $ map (\x -> ((x^.solid) `hit` ray, x)) bs
+    ts = map (_1%~fromMaybe 0)
+         $ filter (isJust . fst)
+         $ map (\x -> ((x^.solid) `hit` ray, x)) bs
 {-# INLINE collide #-}
 
 -- | The "engine" of the ray-tracer
@@ -40,10 +40,10 @@ trace :: (Epsilon a, Floating a, Eq a, Ord a, Num b, Eq b)
       => Config a b          -- ^ Configuration of the scene
       -> Ray a               -- ^ Ray to trace
       -> Color a             -- ^ Color of ray traced
-trace config ray
+trace !config !ray
   | config^.depth == 0 = config^.ambient
   | otherwise          = case collide (config^.bodies) ray of
-      Nothing     -> config ^.ambient
+      Nothing       -> config ^.ambient
       Just (t, x) -> case x^.texture of
         Diffuse c ka kd ks e -> phongColor
           where
@@ -73,7 +73,8 @@ diffuseIllumination
   :: (Num a, Epsilon a, Floating a, Ord a, Num b, Eq b)
   => Config a b -> Color a -> a -> a -> a -> a -> Solid a -> Ray a -> a
   -> Color a
-diffuseIllumination config c ka kd ks e x ray t = clip $ ambientColor + diffColor + specColor
+diffuseIllumination !config !c !ka !kd !ks !e !x !ray !t =
+  clip $ ambientColor + diffColor + specColor
   where
     p = ray *-> (t - epsilon)
     n = normalAt x ray t
@@ -94,20 +95,14 @@ diffuseIllumination config c ka kd ks e x ray t = clip $ ambientColor + diffColo
     specColor =
       if ks == 0
       then 0
-      else ks *^ sum
-           (
-             map
-             (\(i, d) -> i ^* abs (dot (reflect d n)
-                                       (ray^.direction)) ** e)
-             ls
-           )
+      else ks *^ sum (map (\(i, d) -> i ^* abs (dot (reflect d n) (ray^.direction)) ** e) ls)
 {-# INLINE diffuseIllumination #-}
 
 reflectedIllumination
   :: (Num a, Epsilon a, Floating a, Ord a, Num b, Eq b)
   => Config a b -> a -> Solid a -> Ray a -> a
   -> (Config a b, Color a)
-reflectedIllumination config ref x ray t = (config', reflColor)
+reflectedIllumination !config !ref !x !ray !t = (config', reflColor)
   where
     config' = config&depth %~ subtract 1
     reflColor = if ref == 0
@@ -116,4 +111,3 @@ reflectedIllumination config ref x ray t = (config', reflColor)
 {-# INLINE reflectedIllumination #-}
 
 -- =========================
-

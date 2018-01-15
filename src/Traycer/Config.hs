@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric   #-}
+{-# LANGUAGE BangPatterns    #-}
 
 module Traycer.Config
   ( Config
@@ -42,7 +42,7 @@ mkConfig :: (Num b, Ord b)
          -> b
          -> b
          -> Config a b
-mkConfig bs ls a c d aa dof
+mkConfig !bs !ls !a !c !d !aa !dof
   | aa < 1    = error "Invalid number of Anti-aliasing samples."
   | dof < 1   = error "Invalid number of Depth of field samples."
   | otherwise = Config bs ls a c d aa dof

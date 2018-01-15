@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE BangPatterns               #-}
 
 module Traycer.Graphics.Color
   ( Color
@@ -52,7 +53,7 @@ b = color ._z
 {-# INLINE b #-}
 
 mkColor :: (Num a, Ord a) => a -> a -> a -> Color a
-mkColor m n o
+mkColor !m !n !o
   | m < 0 ||
     m > 1 ||
     n < 0 ||
@@ -63,16 +64,17 @@ mkColor m n o
 {-# INLINE mkColor #-}
 
 fromV3 :: (Num a, Ord a) => V3 a -> Color a
-fromV3 v = mkColor (v^._x) (v^._y) (v^._z)
+fromV3 !v = mkColor (v^._x) (v^._y) (v^._z)
 
 fromRGB :: (Num a, Ord a, Fractional a) => Word8 -> Word8 -> Word8 -> Color a
-fromRGB x y z = mkColor (f x) (f y) (f z)
+fromRGB !x !y !z = mkColor (f x) (f y) (f z)
   where
-    f a = fromIntegral a / 255
+    f !a = fromIntegral a / 255
+    {-# INLINE f #-}
 {-# INLINE fromRGB #-}
 
 toRGB :: (RealFrac a) => Color a -> Color Word8
-toRGB c = (round . (*) 255) <$> c
+toRGB !c = (round . (*) 255) <$> c
 {-# INLINE toRGB #-}
 
 _white :: (Num a, Ord a) => Color a
@@ -96,5 +98,11 @@ _blue = mkColor 0 0 1
 {-# INLINE _blue #-}
 
 clip :: (Num a, Ord a) => Color a -> Color a
-clip c = Color $ (\x -> if x > 1 then 1 else if x < 0 then 0 else x) <$> (c^.color)
+clip !c = Color $ f <$> (c^.color)
+  where
+    f !x
+      | x > 1     = 1
+      | x < 0     = 0
+      | otherwise = x
+    {-# INLINE f #-}
 {-# INLINE clip #-}

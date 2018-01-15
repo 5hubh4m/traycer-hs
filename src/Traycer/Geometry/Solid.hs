@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric   #-}
+{-# LANGUAGE BangPatterns    #-}
 
 module Traycer.Geometry.Solid
   ( Solid
@@ -40,24 +41,24 @@ makeLenses ''Solid
 
 -- Contructors
 mkSphere :: (Num a, Ord a) => V3 a -> a -> Solid a
-mkSphere c r
+mkSphere !c !r
   | r < 0     = error "Negative radius for sphere."
   | otherwise = Sphere c r
 {-# INLINE mkSphere #-}
 
 mkPlane :: (Floating a, Epsilon a) => V3 a -> V3 a -> Solid a
-mkPlane c n = Plane c $ normalize n
+mkPlane !c !n = Plane c $ normalize n
 {-# INLINE mkPlane #-}
 
 mkDisk :: (Floating a, Epsilon a, Ord a) => V3 a -> V3 a -> a -> Solid a
-mkDisk c n r
+mkDisk !c !n !r
   | r < 0     = error "Negative radius for disk."
   | otherwise = Disk c (normalize n) r
 {-# INLINE mkDisk #-}
 
--- | Solid type class,
---   implements helper functions for
---   collision etcetr
+-- | Solid type helper functions for
+--   collision etcetra
+
 -- | Check whether point lies inside solid
 isIn :: (Epsilon a, Floating a, Ord a, Eq a)
      => Solid a
@@ -65,7 +66,7 @@ isIn :: (Epsilon a, Floating a, Ord a, Eq a)
      -> Bool
 isIn Plane{} _ = False
 isIn Disk{} _ = False
-isIn (Sphere c r) p = norm (p - c) < r
+isIn (Sphere !c !r) !p = norm (p - c) < r
 {-# INLINE isIn #-}
 
 -- | Test for collision with a solid
@@ -75,18 +76,18 @@ hit :: (Epsilon a, Floating a, Ord a, Eq a)
     => Solid a                    -- ^ The 'Solid' to test collision with
     -> Ray a                      -- ^ 'Ray' to hit
     -> Maybe a                    -- ^ Scalar which gives the intersection point
-hit (Plane c n) ray
+hit (Plane !c !n) !ray
   | nearZero denom || t <= 0 = Nothing
   | otherwise                = Just t
   where
     (denom, t) = hitFlatSurface c n ray
-hit (Disk c n r) ray
+hit (Disk !c !n !r) !ray
   | nearZero denom || t <= 0 || (norm (c - p) > r) = Nothing
   | otherwise                                      = Just t
   where
     (denom, t) = hitFlatSurface c n ray
     p = ray *-> t
-hit (Sphere o r) ray = case quadratic a b c of
+hit (Sphere !o !r) !ray = case quadratic a b c of
   Nothing -> Nothing
   Just (t0, t1)
     | t0 <= 0 && t1 <= 0 -> Nothing
@@ -105,15 +106,15 @@ normalAt :: (Epsilon a, Floating a, Ord a, Eq a)
        -> Ray a
        -> a
        -> V3 a                    -- ^ Normal vector at the intersection point, normalised
-normalAt (Plane c n) ray _ = if dot n (ray^.origin - c) >= 0
-                             then n
-                             else -n
-normalAt (Disk c n _) ray _ = if dot n (ray^.origin - c) >= 0
-                              then n
-                              else -n
-normalAt s@(Sphere c _) ray t = normalize $ if isIn s $ ray^.origin
-                                            then c - p
-                                            else p - c
+normalAt (Plane !c !n) !ray _ = if dot n (ray^.origin - c) >= 0
+                                then n
+                                else -n
+normalAt (Disk !c !n _) !ray _ = if dot n (ray^.origin - c) >= 0
+                                 then n
+                                 else -n
+normalAt s@(Sphere !c _) !ray !t = normalize $ if isIn s $ ray^.origin
+                                               then c - p
+                                               else p - c
   where
     p = ray *-> t
 {-# INLINE normalAt #-}
@@ -125,7 +126,7 @@ reflected :: (Epsilon a, Floating a, Ord a, Eq a)
           -> Ray a
           -> a
           -> Ray a                -- ^ Reflected ray at intersection point
-reflected s r t = mkRay p (reflect (r^.direction) n) (r^.medium)
+reflected !s !r !t = mkRay p (reflect (r^.direction) n) (r^.medium)
   where
     p = r *-> t
     n = normalAt s r t
@@ -139,9 +140,9 @@ refracted :: (Epsilon a, Floating a, Ord a, Eq a)
           -> a
           -> (a -> Maybe (Ray a)) -- | returns a function that takes
                                   --   mu and maybe returns a refracted ray
-refracted Plane{} r _ _ = Just r
-refracted Disk{} r _ _ = Just r
-refracted s r t mu = do
+refracted Plane{} !r _ _ = Just r
+refracted Disk{} !r _ _ = Just r
+refracted !s !r !t !mu = do
   refr <- refract (r^.direction) n (r^.medium) mu
   return $ mkRay p refr mu
     where
@@ -153,7 +154,7 @@ refracted s r t mu = do
 -- Temporary functions
 
 hitFlatSurface :: (Num a, Fractional a) => V3 a -> V3 a -> Ray a -> (a, a)
-hitFlatSurface c n ray = (denom, t)
+hitFlatSurface !c !n !ray = (denom, t)
   where
     denom = dot (ray^.direction) n
     numer = dot (c - ray^.origin) n

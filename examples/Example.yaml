@@ -1,46 +1,194 @@
 bodies:
   - solid:
-      tag: Sphere
+      type: Disk
       center:
       - 0
+      - -1
+      - 6
+      radius: 7.5
+      normal:
+      - 0
       - 1
-      - 7
-      radius: 1
+      - 0
     texture:
-      tag: Diffuse
+      type: Diffuse
       albedo:
-      - 1
+      - 0.2
+      - 0.8
       - 0
-      - 0
-      kAmbient: 0.05
+      kAmbient: 0.1
       kDiffuse: 0.99
       kSpecular: 0.2
       specularExponent: 10
+  - solid:
+      type: Sphere
+      center:
+      - -2.5
+      - -0.5
+      - 0.5
+      radius: 0.5
+    texture:
+      type: Reflective
+      albedo:
+      - 1
+      - 0
+      - 0.3
+      kAmbient: 0.1
+      kDiffuse: 0.7
+      kSpecular: 0.5
+      specularExponent: 8
+      reflectance: 0.7
+  - solid:
+      type: Sphere
+      center:
+      - -1.5
+      - -0.5
+      - 2.5
+      radius: 0.5
+    texture:
+      type: Reflective
+      albedo:
+      - 1
+      - 0.2
+      - 0
+      kAmbient: 0.1
+      kDiffuse: 0.7
+      kSpecular: 0.5
+      specularExponent: 8
+      reflectance: 0.7
+  - solid:
+      type: Sphere
+      center:
+      - -0.5
+      - -0.5
+      - 4.5
+      radius: 0.5
+    texture:
+      type: Reflective
+      albedo:
+      - 0.9
+      - 0.2
+      - 0
+      kAmbient: 0.1
+      kDiffuse: 0.7
+      kSpecular: 0.5
+      specularExponent: 8
+      reflectance: 0.7
+  - solid:
+      type: Sphere
+      center:
+      - 0.5
+      - -0.5
+      - 6.5
+      radius: 0.5
+    texture:
+      type: Reflective
+      albedo:
+      - 0.2
+      - 0.8
+      - 0
+      kAmbient: 0.1
+      kDiffuse: 0.7
+      kSpecular: 0.5
+      specularExponent: 8
+      reflectance: 0.7
+  - solid:
+      type: Sphere
+      center:
+      - 1.5
+      - -0.5
+      - 8.5
+      radius: 0.5
+    texture:
+      type: Reflective
+      albedo:
+      - 0
+      - 0.3
+      - 0.9
+      kAmbient: 0.1
+      kDiffuse: 0.7
+      kSpecular: 0.5
+      specularExponent: 8
+      reflectance: 0.7
+  - solid:
+      type: Sphere
+      center:
+      - 2.5
+      - -0.5
+      - 10.5
+      radius: 0.5
+    texture:
+      type: Reflective
+      albedo:
+      - 1
+      - 0.1
+      - 0
+      kAmbient: 0.1
+      kDiffuse: 0.7
+      kSpecular: 0.5
+      specularExponent: 8
+      reflectance: 0.7
+  - solid:
+      type: Sphere
+      center:
+      - 3.5
+      - -0.5
+      - 12.5
+      radius: 0.5
+    texture:
+      type: Reflective
+      albedo:
+      - 0
+      - 1
+      - 0.7
+      kAmbient: 0.1
+      kDiffuse: 0.7
+      kSpecular: 0.5
+      specularExponent: 8
+      reflectance: 0.7
+  - solid:
+      type: Sphere
+      center:
+      - 2.5
+      - -0.5
+      - 1
+      radius: 0.5
+    texture:
+      type: Reflective
+      albedo:
+      - 0.7
+      - 0.2
+      - 0.2
+      kAmbient: 0.05
+      kDiffuse: 0.9
+      kSpecular: 0.1
+      specularExponent: 10
+      reflectance: 0.1
 lights:
   - intensity:
-    - 1
-    - 1
-    - 1
+    - 0.7
+    - 0.7
+    - 0.7
     position:
     - -10
     - 20
     - 5
   - intensity:
-    - 1
-    - 1
-    - 1
+    - 0.7
+    - 0.7
+    - 0.7
     position:
     - 10
     - 20
     - -5
 camera:
-  focalLength: 7
+  focalLength: 10
   windowSize:
-  - 8
-  - 4
+  - 6
+  - 3
   windowDim:
-  - 800
-  - 400
+  - 1500
+  - 750
   eye:
   - 0
   - 0
@@ -50,5 +198,5 @@ ambient:
 - 0.74
 - 1
 depth: 10
-aaSamples: 4
-dofSamples: 25
+aaSamples: 9
+dofSamples: 9

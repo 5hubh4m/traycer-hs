@@ -2,7 +2,6 @@ module Main where
 
 import Traycer
 import System.Environment
-import System.Random
 import Data.Yaml
 import Data.Time
 import Codec.Picture
@@ -20,18 +19,12 @@ main = do
     ++ " as "
     ++ imageName
     ++ "."
-  gen <- getStdGen
   contents <- B.readFile filePath
-  let config = decode contents :: Maybe (Config Double Int)
+  let config = either error id (decodeEither contents :: Either String (Config Double Int))
   start <- getCurrentTime
-  case flip renderImage gen <$> config of
-    Just image -> do
-      savePngImage imageName image
-      end <- getCurrentTime
-      putStrLn
-        $ "Finished rendering in "
-        ++ show (end `diffUTCTime` start)
-        ++ ", saved to "
-        ++ show imageName
-        ++ "."
-    Nothing -> error "Unable to parse config file."
+  savePngImage imageName $ renderImage config
+  end <- getCurrentTime
+  putStrLn $ "Finished rendering in "
+           ++ show (end `diffUTCTime` start)
+           ++ "."
+  

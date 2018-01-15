@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric   #-}
+{-# LANGUAGE BangPatterns    #-}
 
 module Traycer.Graphics.Camera
   ( Camera
@@ -27,15 +28,15 @@ data Camera a b = Camera { _eye :: !(V3 a)         -- ^ Location of eye in the s
 makeLenses ''Camera
 
 mkCamera :: (Num a, Ord a, Num b, Ord b) => V3 a -> V2 a -> V2 b -> a -> Camera a b
-mkCamera p (V2 s1 s2) (V2 d1 d2) f
+mkCamera !p (V2 !s1 !s2) (V2 !d1 !d2) !f
   | s1 <= 0 || s2 <= 0 || d1 <= 0 || d2 <= 0 = error "Dimension values less than 0."
   | f <= 0                                   = error "Invalid focal length."   
   | otherwise                                = Camera p (V2 s1 s2) (V2 d1 d2) f
 {-# INLINE mkCamera #-}
 
 pixelSize :: (Num a, Fractional a, Integral b) => Camera a b -> V2 a
-pixelSize camera = V2 (camera^.windowSize^._x / fromIntegral (camera^.windowDim^._x))
-                      (camera^.windowSize^._y / fromIntegral (camera^.windowDim^._y))
+pixelSize !camera = V2 (camera^.windowSize^._x / fromIntegral (camera^.windowDim^._x))
+                       (camera^.windowSize^._y / fromIntegral (camera^.windowDim^._y))
 {-# INLINE pixelSize #-}
 
 -- | Assuming the view window is located such that
@@ -46,7 +47,7 @@ pixel2Pos :: (Num a, Fractional a, Integral b, Num b, Ord b)
           => Camera a b
           -> V2 b
           -> V3 a
-pixel2Pos camera (V2 x y)
+pixel2Pos !camera (V2 !x !y)
   | x < 0                     ||
     y < 0                     ||
     x > camera^.windowDim^._x ||

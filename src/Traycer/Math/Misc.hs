@@ -1,3 +1,5 @@
+{-# LANGUAGE BangPatterns #-}
+
 module Traycer.Math.Misc
   ( quadratic
   , reflect
@@ -15,7 +17,7 @@ import Linear.Metric
 
 -- | Solve a quadratic equation and return it's solutions
 quadratic :: (Floating a, Ord a, Eq a) => a -> a -> a -> Maybe (a, a)
-quadratic m n o
+quadratic !m !n !o
   | d < 0     = Nothing
   | d == 0    = Just (-0.5 * n / m, -0.5 * n / m)
   | otherwise = Just (min j k, max j k)
@@ -29,7 +31,7 @@ quadratic m n o
 -- | Calculate the reflection direction of a vector
 --   against a normal vector
 reflect :: (Epsilon a, Floating a) => V3 a -> V3 a -> V3 a
-reflect j k = i - 2 * dot i n *^ n
+reflect !j !k = i - 2 * dot i n *^ n
   where
     i = normalize j
     n = normalize k
@@ -39,7 +41,7 @@ reflect j k = i - 2 * dot i n *^ n
 --   against a normal vector given mu1 and mu2,
 --   the refractive inices of the 2 media
 refract :: (Epsilon a, Floating a, Ord a) => V3 a -> V3 a -> a -> a -> Maybe (V3 a)
-refract j k m1 m2
+refract !j !k !m1 !m2
   | sinsqtt > 1 = Nothing
   | otherwise   = Just $ normalize $ m *^ i + (m * costi - sqrt (1 - sinsqtt)) *^ n
   where
@@ -47,7 +49,7 @@ refract j k m1 m2
 {-# INLINE refract #-}
 
 reflectance :: (Epsilon a, Floating a, Ord a) => V3 a -> V3 a -> a -> a -> a
-reflectance j k m1 m2
+reflectance !j !k !m1 !m2
   | sinsqtt > 1 = 1
   | m1 > m2 && sinsqtt <= 1 = r0 + (1 - r0) * x * x * x * x * x
   | otherwise               = r0 + (1 - r0) * y * y * y * y * y
@@ -59,11 +61,11 @@ reflectance j k m1 m2
 {-# INLINE reflectance #-}
     
 refractance :: (Num a, Epsilon a, Floating a, Ord a) => V3 a -> V3 a -> a -> a -> a
-refractance j k m1 m2 = 1 - reflectance j k m1 m2
+refractance !j !k !m1 !m2 = 1 - reflectance j k m1 m2
 {-# INLINE refractance #-}
 
 fresnel :: (Num a, Epsilon a, Floating a, Ord a) => V3 a -> V3 a -> a -> a -> (a, a)
-fresnel j k m1 m2 = (reflectance j k m1 m2, refractance j k m1 m2)
+fresnel !j !k !m1 !m2 = (reflectance j k m1 m2, refractance j k m1 m2)
 {-# INLINE fresnel #-}
 
 -- | A small value close to zero
@@ -77,7 +79,7 @@ epsilon = 1e-6
 goodies :: (Epsilon a, Floating a, Ord a)
         => V3 a -> V3 a -> a -> a
         -> (V3 a, V3 a, a, a, a)
-goodies j k m1 m2 = (i, n, m, costi, sinsqtt)
+goodies !j !k !m1 !m2 = (i, n, m, costi, sinsqtt)
   where
     i = normalize j
     n = normalize k
