@@ -5,7 +5,6 @@ module Traycer
   , mkCamera
   , mkColor, fromV3, fromRGB, _white, _black, _red, _green, _blue
   , mkDiffuse, mkReflective, mkTransparent
-  , trace
   , mkSphere, mkPlane, mkDisk
   , renderImage
   , V3(..)
@@ -21,6 +20,5 @@ import Traycer.Graphics.Light
 import Traycer.Graphics.Camera
 import Traycer.Graphics.Color
 import Traycer.Graphics.Texture
-import Traycer.Graphics.RayTracing
 import Traycer.Graphics.Rendering
 import Traycer.Geometry.Solid

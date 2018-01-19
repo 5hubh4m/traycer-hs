@@ -3,6 +3,11 @@
 
 module Traycer.Graphics.Rendering
   ( renderImage
+  , uniformSamples
+  , apertureSamples
+  , antiAliasingSamples
+  , pixelColor
+  , toImage
   ) where
 
 import Linear.V2

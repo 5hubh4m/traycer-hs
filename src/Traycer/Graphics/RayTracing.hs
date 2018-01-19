@@ -1,7 +1,11 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE BangPatterns        #-}
 module Traycer.Graphics.RayTracing
-  ( trace ) where
+  ( collide
+  , trace
+  , diffuseIllumination
+  , reflectedIllumination
+  ) where
 
 import Data.Foldable
 import Data.Function
