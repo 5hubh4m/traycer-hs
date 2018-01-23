@@ -1,10 +1,10 @@
 module Traycer
-  ( Config, mkConfig
+  ( Config, mkConfigFromTextures, mkConfig
   , Body(..)
   , Light(..)
   , mkCamera
   , mkColor, fromV3, fromRGB, _white, _black, _red, _green, _blue
-  , mkDiffuse, mkReflective, mkTransparent
+  , mkPlain
   , mkSphere, mkPlane, mkDisk
   , renderImage
   , V3(..)

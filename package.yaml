@@ -50,15 +50,3 @@ executables:
     - -optlo-O3
     dependencies:
     - traycer-hs
-
-tests:
-  traycer-hs-test:
-    main:                Spec.hs
-    source-dirs:         test
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - traycer-hs
-    - hspec

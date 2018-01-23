@@ -49,29 +49,7 @@ instance (Ord a, Floating a, Epsilon a, FromJSON a) => FromJSON (Solid a) where
       _ -> fail $ "Unknown solid: " ++ typ
 
 instance (Num a, Ord a, FromJSON a) => FromJSON (Texture a) where
-  parseJSON = withObject "Texture" $ \o -> do
-    typ <- o .: "type"
-    case typ of
-      "Diffuse" -> mkDiffuse <$> o .: "albedo"
-                             <*> o .: "kAmbient"
-                             <*> o .: "kDiffuse"
-                             <*> o .: "kSpecular"
-                             <*> o .: "specularExponent"
-      "Reflective" -> mkReflective <$> o .: "albedo"
-                                   <*> o .: "kAmbient"
-                                   <*> o .: "kDiffuse"
-                                   <*> o .: "kSpecular"
-                                   <*> o .: "specularExponent"
-                                   <*> o .: "reflectance"
-      "Transparent" -> mkTransparent <$> o .: "albedo"
-                                     <*> o .: "kAmbient"
-                                     <*> o .: "kDiffuse"
-                                     <*> o .: "kSpecular"
-                                     <*> o .: "specularExponent"
-                                     <*> o .: "reflectance"
-                                     <*> o .: "transparency"
-                                     <*> o .: "mu"
-      _ -> fail $ "Unknown texture: " ++ typ
+  parseJSON = genericParseJSON parseOptions
 
 instance (Num a, Ord a, FromJSON a) => FromJSON (Light a) where
   parseJSON = genericParseJSON parseOptions
@@ -86,12 +64,16 @@ instance (Num a, Ord a, Num b, Ord b, FromJSON a, FromJSON b) => FromJSON (Camer
              <*> o .: "windowDim"
              <*> o .: "focalLength"
 
-instance (Ord a, Floating a, Epsilon a, FromJSON a, Num b, Ord b, FromJSON b) => FromJSON (Config a b) where
+instance (Ord a, Floating a, Epsilon a, FromJSON a, Num b, Ord b, FromJSON b) => FromJSON (SolidRef a b) where
+  parseJSON = genericParseJSON parseOptions
+
+instance (Ord a, Floating a, Epsilon a, FromJSON a, Num b, Ord b, Integral b, FromJSON b) => FromJSON (Config a b) where
   parseJSON = withObject "Config" $ \o ->
-    mkConfig <$> o .: "bodies"
-             <*> o .: "lights"
-             <*> o .: "ambient"
-             <*> o .: "camera"
-             <*> o .: "depth"
-             <*> o .: "aaSamples"
-             <*> o .: "dofSamples"
+    mkConfigFromTextures <$> o .: "materials"
+                         <*> o .: "bodies"
+                         <*> o .: "lights"
+                         <*> o .: "ambient"
+                         <*> o .: "camera"
+                         <*> o .: "depth"
+                         <*> o .: "aaSamples"
+                         <*> o .: "dofSamples"

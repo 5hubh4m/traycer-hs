@@ -1,10 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE BangPatterns        #-}
 module Traycer.Graphics.RayTracing
-  ( collide
-  , trace
-  , diffuseIllumination
-  , reflectedIllumination
+  ( trace
   ) where
 
 import Data.Foldable
@@ -30,11 +27,10 @@ collide :: (Epsilon a, Floating a, Ord a)
         -> Maybe (a, Body a)
 collide !bs !ray
   | null ts   = Nothing
-  | otherwise = Just $ minimumBy (compare `on` fst) ts
+  | otherwise = Just $ minElem&_1 %~ fromMaybe 0
   where
-    ts = map (_1%~fromMaybe 0)
-         $ filter (isJust . fst)
-         $ map (\x -> ((x^.solid) `hit` ray, x)) bs
+    ts = filter (isJust . fst) $ zip (map ((`hit` ray) . (^.solid)) bs) bs
+    minElem = minimumBy (compare `on` fst) ts
 {-# INLINE collide #-}
 
 -- | The "engine" of the ray-tracer
@@ -44,73 +40,107 @@ trace :: (Epsilon a, Floating a, Eq a, Ord a, Num b, Eq b)
       -> Ray a               -- ^ Ray to trace
       -> Color a             -- ^ Color of ray traced
 trace !config !ray
-  | config^.depth == 0 = config^.ambient
+  | config^.depth == 0 = config^.ambient * sum (map (^.intensity) $ config^.lights)
   | otherwise          = case collide (config^.bodies) ray of
-      Nothing       -> config ^.ambient
-      Just (t, x) -> case x^.texture of
-        Diffuse c ka kd ks e -> phongColor
-          where
-            phongColor = diffuseIllumination config c ka kd ks e (x^.solid) ray t
-        Reflective c ka kd ks e ref -> clip $ phongColor + reflColor
-          where
-            phongColor = diffuseIllumination config c ka kd ks e (x^.solid) ray t
-            (_, reflColor) = reflectedIllumination config ref (x^.solid) ray t
-        Transparent c ka kd ks e ref trs m -> clip $ phongColor + reflColor + refrColor
-          where
-            phongColor = diffuseIllumination config c ka kd ks e (x^.solid) ray t
-            (config', reflColor) = reflectedIllumination config ref (x^.solid) ray t
-            refrColor =
-              if trs == 0
-              then 0
-              else trs *^ fromMaybe 0
-                          (
-                            trace config'
-                            <$> refracted (x^.solid) ray (t + epsilon) m
-                          )
+      Nothing     -> config ^.ambient
+      Just (t, x) -> clip $ phongColor + reflColor + refrColor
+        where
+          config' = config&depth %~ subtract 1
+          phongColor = diffIllum
+                       config
+                       (x^.texture^.albedo)
+                       (x^.texture^.kAmbient)
+                       (x^.texture^.kDiffuse)
+                       (x^.texture^.kSpecular)
+                       (x^.texture^.specularExponent)
+                       (x^.solid)
+                       ray
+                       t
+          reflColor = reflIllum
+                      config'
+                      (x^.texture^.reflectance)
+                      (x^.solid)
+                      ray
+                      t
+          refrColor = refrIllum
+                      config'
+                      (x^.texture^.transparency)
+                      (x^.texture^.mu)
+                      (x^.solid)
+                      ray
+                      t
 {-# INLINE trace #-}
 
 -- ==========================
 -- Temporary functions
 
-diffuseIllumination
-  :: (Num a, Epsilon a, Floating a, Ord a, Num b, Eq b)
-  => Config a b -> Color a -> a -> a -> a -> a -> Solid a -> Ray a -> a
-  -> Color a
-diffuseIllumination !config !c !ka !kd !ks !e !x !ray !t =
-  clip $ ambientColor + diffColor + specColor
+diffIllum :: (Num a, Epsilon a, Floating a, Ord a, Num b, Eq b)
+          => Config a b
+          -> Color a        -- ^ Albedo
+          -> a              -- ^ Ka
+          -> a              -- ^ Kd
+          -> a              -- ^ Ks
+          -> a              -- ^ Specular Exponent
+          -> Solid a
+          -> Ray a
+          -> a 
+          -> Color a
+diffIllum !config !c !ka !kd !ks !e !x !ray !t = clip $ ambientColor + diffColor + specColor
   where
     p = ray *-> (t - epsilon)
     n = normalAt x ray t
   
     -- | Rays from the point of intersection to light sources
-    shadowRays = map (\l -> (l, p --> (l^.position) $ 1)) $ config^.lights
-    lightRays = filter (isNothing . collide (config^.bodies) . snd) shadowRays
-    ls = map (\(l, lray) -> (l^.intensity, lray^.direction)) lightRays
-    bs = map (\(l, lray) -> (l^.intensity, lray^.direction)) shadowRays
-    
+    point2Lights = map (\l -> (l, p --> (l^.position) $ 1)) $ config^.lights
+    nonShadowed = filter (isNothing . collide (config^.bodies) . snd) point2Lights
+    intensities = map (\(l, lray) -> (l^.intensity, lray^.direction)) nonShadowed  
+
     -- | Color of a diffuse surface using phong model
+    calcDiff (i, d) = c * i ^* dot n d
+    calcSpec (i, d) = i ^* abs (dot (reflect d n) (ray^.direction)) ** e
+
+    -- | Short circuit the multiplication for efficiency?
     ambientColor = if ka == 0
                    then 0
-                   else ka *^ ((config^.ambient) + sum (map fst bs))
+                   else ka *^ sum (map (^.intensity) $ config^.lights)
     diffColor = if kd == 0
                 then 0
-                else kd *^ sum (map (\(i, d) -> c * i ^* dot n d) ls)
-    specColor =
-      if ks == 0
-      then 0
-      else ks *^ sum (map (\(i, d) -> i ^* abs (dot (reflect d n) (ray^.direction)) ** e) ls)
-{-# INLINE diffuseIllumination #-}
-
-reflectedIllumination
-  :: (Num a, Epsilon a, Floating a, Ord a, Num b, Eq b)
-  => Config a b -> a -> Solid a -> Ray a -> a
-  -> (Config a b, Color a)
-reflectedIllumination !config !ref !x !ray !t = (config', reflColor)
-  where
-    config' = config&depth %~ subtract 1
-    reflColor = if ref == 0
+                else kd *^ sum (map calcDiff intensities)
+    specColor = if ks == 0
                 then 0
-                else ref *^ trace config' (reflected x ray $ t - epsilon)
-{-# INLINE reflectedIllumination #-}
+                else ks *^ sum (map calcSpec intensities)
+{-# INLINE diffIllum #-}
+
+reflIllum :: (Num a, Epsilon a, Floating a, Ord a, Num b, Eq b)
+          => Config a b
+          -> a          -- ^ Reflectance
+          -> Solid a
+          -> Ray a
+          -> a
+          -> Color a
+reflIllum !config !ref !x !ray !t = if ref == 0
+                                                then 0
+                                                else ref *^ reflColor
+  where
+    reflRay = reflected x ray $ t - epsilon
+    reflColor = trace config reflRay
+{-# INLINE reflIllum #-}
+
+refrIllum :: (Num a, Epsilon a, Floating a, Ord a, Num b, Eq b)
+          => Config a b
+          -> a            -- ^ Transparency
+          -> a            -- ^ Refractive Index
+          -> Solid a
+          -> Ray a
+          -> a
+          -> Color a
+refrIllum !config !trs !m !x !ray !t = if trs == 0
+                                                   then 0
+                                                   else trs *^ refrColor 
+  where
+    refrRay = refracted x ray (t + epsilon) m
+    refrColor = fromMaybe 0 (trace config <$> refrRay)
+ 
+{-# INLINE refrIllum #-}
 
 -- =========================

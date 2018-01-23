@@ -4,7 +4,9 @@
 
 module Traycer.Config
   ( Config
+  , SolidRef
   , mkConfig
+  , mkConfigFromTextures
   , bodies
   , lights
   , ambient
@@ -16,10 +18,12 @@ module Traycer.Config
 
 import Control.Lens
 import GHC.Generics
-import Traycer.Graphics.Body
+import Traycer.Geometry.Solid
+import Traycer.Graphics.Body hiding (solid, texture)
 import Traycer.Graphics.Light
 import Traycer.Graphics.Camera
 import Traycer.Graphics.Color
+import Traycer.Graphics.Texture
 
 data Config a b = Config { _bodies :: ![Body a]     -- ^ 'Bodies' in the scene
                          , _lights :: ![Light a]    -- ^ 'Light's in the scene
@@ -31,9 +35,15 @@ data Config a b = Config { _bodies :: ![Body a]     -- ^ 'Bodies' in the scene
                          }
                 deriving (Show, Read, Generic)
 
-makeLenses ''Config
+data SolidRef a b = SolidRef { _solid :: !(Solid a) -- ^ 'Solid'
+                             , _texture :: !b       -- ^ Index in the 'Texture's list.
+                             }
+                  deriving (Show, Read, Generic)
 
-mkConfig :: (Num b, Ord b)
+makeLenses ''Config
+makeLenses ''SolidRef
+
+mkConfig :: (Num b, Ord b, Integral b)
          => [Body a]
          -> [Light a]
          -> Color a
@@ -43,6 +53,31 @@ mkConfig :: (Num b, Ord b)
          -> b
          -> Config a b
 mkConfig !bs !ls !a !c !d !aa !dof
-  | aa < 1    = error "Invalid number of Anti-aliasing samples."
-  | dof < 1   = error "Invalid number of Depth of field samples."
-  | otherwise = Config bs ls a c d aa dof
+  | aa < 1                 = error "Invalid number of Anti-aliasing samples."
+  | dof < 1                = error "Invalid number of Depth of field samples."
+  | otherwise              = Config bs ls a c d aa dof
+{-# INLINE mkConfig #-}
+
+mkConfigFromTextures :: (Num b, Ord b, Integral b)
+                     => [Texture a]
+                     -> [SolidRef a b]
+                     -> [Light a]
+                     -> Color a
+                     -> Camera a b
+                     -> b
+                     -> b
+                     -> b
+                     -> Config a b
+mkConfigFromTextures !txs !srs !ls !a !c !d !aa !dof
+  | aa < 1                 = error "Invalid number of Anti-aliasing samples."
+  | dof < 1                = error "Invalid number of Depth of field samples."
+  | maxIndex > texListSize = error "Texture index greater than bound."
+  | minIndex < 0           = error "Texture index less than 0."
+  | otherwise              = Config sRefs2Bodies ls a c d aa dof
+  where
+    indexList = map (^.texture) srs
+    minIndex = minimum indexList
+    maxIndex = maximum indexList
+    texListSize = fromIntegral (length txs) - 1
+    sRefs2Bodies = map (\sref -> Body (sref^.solid) (txs !! fromIntegral (sref^.texture))) srs
+{-# INLINE mkConfigFromTextures #-}
