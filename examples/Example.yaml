@@ -1,5 +1,5 @@
 materials:
-  - albedo:	
+  - albedo:
     - 0.2
     - 0.8
     - 0
@@ -11,39 +11,15 @@ materials:
     transparency: 0
     mu: 1
 
-  - albedo:	
-    - 0.2
+  - albedo:
     - 0.8
     - 0
+    - 0.2
     kAmbient: 0.1
     kDiffuse: 0.99
     kSpecular: 0.2
     specularExponent: 10
     reflectance: 0.7
-    transparency: 0
-    mu: 1
-
-  - albedo:	
-    - 0.2
-    - 0.8
-    - 0
-    kAmbient: 0.1
-    kDiffuse: 0.99
-    kSpecular: 0.2
-    specularExponent: 10
-    reflectance: 0
-    transparency: 0
-    mu: 1
-
-  - albedo:	
-    - 0.2
-    - 0.8
-    - 0
-    kAmbient: 0.1
-    kDiffuse: 0.99
-    kSpecular: 0.2
-    specularExponent: 10
-    reflectance: 0
     transparency: 0
     mu: 1
 
@@ -72,7 +48,7 @@ bodies:
       - 1
       - 0
     texture: 0
-      
+
   - solid:
       type: Sphere
       center:
@@ -104,7 +80,7 @@ bodies:
       - -0.5
       - 6.5
       radius: 0.5
-    texture: 3
+    texture: 1
   - solid:
       type: Sphere
       center:
@@ -112,7 +88,7 @@ bodies:
       - -0.5
       - 8.5
       radius: 0.5
-    texture: 4
+    texture: 1
   - solid:
       type: Sphere
       center:
@@ -120,7 +96,7 @@ bodies:
       - -0.5
       - 10.5
       radius: 0.5
-    texture: 6
+    texture: 1
   - solid:
       type: Sphere
       center:
@@ -128,7 +104,7 @@ bodies:
       - -0.5
       - 12.5
       radius: 0.5
-    texture: 2
+    texture: 1
   - solid:
       type: Sphere
       center:
@@ -136,7 +112,7 @@ bodies:
       - -0.5
       - 1
       radius: 0.5
-    texture: 4
+    texture: 2
 lights:
   - intensity:
     - 1
