@@ -1,10 +1,10 @@
 materials:
   - albedo: [1, 1, 1]
-    kAmbient: 0.1
+    kAmbient: 0
     kDiffuse: 0
-    kSpecular: 0.6
-    specularExponent: 10
-    reflectance: 0.8
+    kSpecular: 0
+    specularExponent: 0
+    reflectance: 0.9
     transparency: 0
     mu: 1
   - albedo: [0.8, 0.2, 0]
@@ -31,52 +31,54 @@ materials:
     reflectance: 0.1
     transparency: 0
     mu: 1
+  - albedo: [0.8, 0.8, 0]
+    kAmbient: 0.1
+    kDiffuse: 0.99
+    kSpecular: 0.2
+    specularExponent: 10
+    reflectance: 0.1
+    transparency: 0
+    mu: 1
+
 bodies:
   - solid:
       type: Disk
-      center: [0, -1, 0]
+      center: [0, -0.5, 0]
       normal: [0, 1, 0]
       radius: 3
     texture: 0
   - solid:
-      type: Disk
-      center: [0, 0, 1]
-      normal: [0, 0, -1]
-      radius: 3
-    texture: 0
-  - solid:
-      type: Disk
-      center: [-1, 0, 0]
-      normal: [1, 0, 0]
-      radius: 3
-    texture: 0
-  - solid:
       type: Sphere
-      center: [-0.5, -0.5, 0.5]
+      center: [1, 0, 1]
       radius: 0.5
     texture: 1
   - solid:
       type: Sphere
-      center: [0.5, -0.5, 0.5]
+      center: [-2, 0, 1]
       radius: 0.5
     texture: 2
   - solid:
       type: Sphere
-      center: [0, -0.5, -0.5]
+      center: [-1, 0, -1]
       radius: 0.5
     texture: 3
+  - solid:
+      type: Sphere
+      center: [2, 0, -1]
+      radius: 0.5
+    texture: 4
 lights:
   - intensity: [1, 1, 1]
-    position: [0, 20, -1]
+    position: [20, 20, -20]
 camera:
   focalLength: 10
-  windowCenter: [5, 5, -5]
-  windowNormal: [1, 1, -1]
+  windowCenter: [5, 2.5, -5]
+  windowNormal: [1, 0.5, -1]
   windowRotation: [0, 1, 0]
   windowSize: [6, 3]
   windowDim: [600, 300]
-  eye: [10, 10, -10]
-ambient: [0, 0.74, 1]
+  eye: [10, 5, -10]
+ambient: [1, 1, 1]
 depth: 10
 aaSamples: 9
 dofSamples: 4
