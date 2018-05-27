@@ -57,10 +57,13 @@ instance (Num a, Ord a, FromJSON a) => FromJSON (Light a) where
 instance (Ord a, Floating a, Epsilon a, FromJSON a) => FromJSON (Body a) where
   parseJSON = genericParseJSON parseOptions
 
-instance (Num a, Ord a, Num b, Ord b, FromJSON a, FromJSON b) => FromJSON (Camera a b) where
+instance (Epsilon a, Floating a, Ord a, Num b, Ord b, FromJSON a, FromJSON b) => FromJSON (Camera a b) where
   parseJSON = withObject "Camera" $ \o ->
     mkCamera <$> o .: "eye"
              <*> o .: "windowSize"
+             <*> o .: "windowCenter"
+             <*> o .: "windowNormal"
+             <*> o .: "windowRotation"
              <*> o .: "windowDim"
              <*> o .: "focalLength"
 

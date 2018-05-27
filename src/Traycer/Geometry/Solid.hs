@@ -47,13 +47,16 @@ mkSphere !c !r
 {-# INLINE mkSphere #-}
 
 mkPlane :: (Floating a, Epsilon a) => V3 a -> V3 a -> Solid a
-mkPlane !c !n = Plane c $ normalize n
+mkPlane !c !n
+  | nearZero n = error "Normal can't be zero."
+  | otherwise  = Plane c $ normalize n
 {-# INLINE mkPlane #-}
 
 mkDisk :: (Floating a, Epsilon a, Ord a) => V3 a -> V3 a -> a -> Solid a
 mkDisk !c !n !r
-  | r < 0     = error "Negative radius for disk."
-  | otherwise = Disk c (normalize n) r
+  | r < 0      = error "Negative radius for disk."
+  | nearZero n = error "Normal can't be zero."
+  | otherwise  = Disk c (normalize n) r
 {-# INLINE mkDisk #-}
 
 -- | Solid type helper functions for

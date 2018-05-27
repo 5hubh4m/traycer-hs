@@ -14,7 +14,7 @@ Make sure you have `opt`([LLVM](http://llvm.org)) in your `$PATH`. If you don't 
 
 Define the world by making a config file (like `examples/Example.yaml`), and run the program as follows
 
-`stack exec traycer-hs -- PATH_TO_CONFIG PATH_TO_IMAGE.png`
+`stack exec traycer-hs -- PATH_TO_CONFIG.yaml PATH_TO_IMAGE.png`
 
 ### Example
 

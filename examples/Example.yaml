@@ -1,8 +1,5 @@
 materials:
-  - albedo:
-    - 0.2
-    - 0.8
-    - 0
+  - albedo: [0.2, 0.8, 0]
     kAmbient: 0.1
     kDiffuse: 0.99
     kSpecular: 0.2
@@ -10,134 +7,56 @@ materials:
     reflectance: 0
     transparency: 0
     mu: 1
-
-  - albedo:
-    - 0.8
-    - 0
-    - 0.2
+  - albedo: [0.8, 0.2, 0]
     kAmbient: 0.1
     kDiffuse: 0.99
     kSpecular: 0.2
     specularExponent: 10
-    reflectance: 0.7
+    reflectance: 0.1
     transparency: 0
     mu: 1
-
-  - albedo:
-    - 0.7
-    - 0.2
-    - 0.2
-    kAmbient: 0.01
-    kDiffuse: 0.01
-    kSpecular: 0.5
+  - albedo: [1, 1, 1]
+    kAmbient: 0
+    kDiffuse: 0
+    kSpecular: 0.01
     specularExponent: 20
-    reflectance: 0.05
-    transparency: 0.9
-    mu: 1.7
-
+    reflectance: 0.01
+    transparency: 0.99
+    mu: 1.2
 bodies:
   - solid:
       type: Disk
-      center:
-      - 0
-      - -1
-      - 6
-      radius: 7.5
-      normal:
-      - 0
-      - 1
-      - 0
+      center: [0, -1, 0]
+      normal: [0, 1, 0]
+      radius: 2
     texture: 0
-
   - solid:
       type: Sphere
-      center:
-      - -2.5
-      - -0.5
-      - 0.5
+      center: [-0.5, -0.5, 0.5]
       radius: 0.5
     texture: 1
   - solid:
       type: Sphere
-      center:
-      - -1.5
-      - -0.5
-      - 2.5
+      center: [0.5, -0.5, 0.5]
       radius: 0.5
     texture: 1
   - solid:
       type: Sphere
-      center:
-      - -0.5
-      - -0.5
-      - 4.5
-      radius: 0.5
-    texture: 2
-  - solid:
-      type: Sphere
-      center:
-      - 0.5
-      - -0.5
-      - 6.5
-      radius: 0.5
-    texture: 1
-  - solid:
-      type: Sphere
-      center:
-      - 1.5
-      - -0.5
-      - 8.5
-      radius: 0.5
-    texture: 1
-  - solid:
-      type: Sphere
-      center:
-      - 2.5
-      - -0.5
-      - 10.5
-      radius: 0.5
-    texture: 1
-  - solid:
-      type: Sphere
-      center:
-      - 3.5
-      - -0.5
-      - 12.5
-      radius: 0.5
-    texture: 1
-  - solid:
-      type: Sphere
-      center:
-      - 0.5
-      - -0.5
-      - 1
+      center: [0, -0.5, -0.5]
       radius: 0.5
     texture: 2
 lights:
-  - intensity:
-    - 1
-    - 1
-    - 1
-    position:
-    - 0
-    - 20
-    - 0
+  - intensity: [1, 1, 1]
+    position: [0, 20, 0]
 camera:
   focalLength: 10
-  windowSize:
-  - 6
-  - 3
-  windowDim:
-  - 1200
-  - 600
-  eye:
-  - 0
-  - 0
-  - -10
-ambient:
-- 0
-- 0.74
-- 1
+  windowCenter: [0, 5, -5]
+  windowNormal: [0, 1, -1]
+  windowRotation: [0, 1, 0]
+  windowSize: [3, 1.5]
+  windowDim: [600, 300]
+  eye: [0, 10, -10]
+ambient: [0, 0.74, 1]
 depth: 10
-aaSamples: 4
-dofSamples: 9
+aaSamples: 9
+dofSamples: 4
