@@ -1,84 +1,58 @@
 materials:
+  - albedo: [1, 0, 0]
+  - albedo: [0, 1, 0]
   - albedo: [1, 1, 1]
-    kAmbient: 0
-    kDiffuse: 0
-    kSpecular: 0
-    specularExponent: 0
+    kDiffuse: 0.01
+    kSpecular: 0.1
     reflectance: 0.9
-    transparency: 0
-    mu: 1
-  - albedo: [0.8, 0.2, 0]
-    kAmbient: 0.1
-    kDiffuse: 0.99
-    kSpecular: 0.2
-    specularExponent: 10
-    reflectance: 0.1
-    transparency: 0
-    mu: 1
-  - albedo: [0.2, 0.8, 0]
-    kAmbient: 0.1
-    kDiffuse: 0.99
-    kSpecular: 0.2
-    specularExponent: 10
-    reflectance: 0.1
-    transparency: 0
-    mu: 1
-  - albedo: [0, 0.2, 0.8]
-    kAmbient: 0.1
-    kDiffuse: 0.99
-    kSpecular: 0.2
-    specularExponent: 10
-    reflectance: 0.1
-    transparency: 0
-    mu: 1
-  - albedo: [0.8, 0.8, 0]
-    kAmbient: 0.1
-    kDiffuse: 0.99
-    kSpecular: 0.2
-    specularExponent: 10
-    reflectance: 0.1
-    transparency: 0
-    mu: 1
-
+  - albedo: [0, 0, 1]
+  - albedo: [1, 1, 0]
 bodies:
   - solid:
       type: Disk
-      center: [0, -0.5, 0]
       normal: [0, 1, 0]
-      radius: 3
-    texture: 0
-  - solid:
-      type: Sphere
-      center: [1, 0, 1]
-      radius: 0.5
-    texture: 1
-  - solid:
-      type: Sphere
-      center: [-2, 0, 1]
-      radius: 0.5
+      radius: 1
     texture: 2
   - solid:
       type: Sphere
-      center: [-1, 0, -1]
-      radius: 0.5
-    texture: 3
+      radius: 0.25
+    texture: 1
+    transforms:
+      - type: Translation
+        vector: [0, 0.25, 0.5]
   - solid:
       type: Sphere
-      center: [2, 0, -1]
-      radius: 0.5
+      radius: 0.25
+    texture: 0
+    transforms:
+      - type: Translation
+        vector: [0, 0.25, -0.5]
+  - solid:
+      type: Sphere
+      radius: 0.25
+    texture: 3
+    transforms:
+      - type: Translation
+        vector: [0.5, 0.25, 0.5]
+  - solid:
+      type: Cuboid
+      xLength: 0.25
+      yLength: 0.25
+      zLength: 0.25
     texture: 4
+    transforms:
+      - type: Rotation
+        yAngle: 0.785
+      - type: Translation
+        vector: [-0.5, 0.125, 0.5]
 lights:
   - intensity: [1, 1, 1]
     position: [20, 20, -20]
 camera:
-  focalLength: 10
-  windowCenter: [5, 2.5, -5]
-  windowNormal: [1, 0.5, -1]
-  windowRotation: [0, 1, 0]
-  windowSize: [6, 3]
+  windowSize: [3, 1.5]
   windowDim: [600, 300]
-  eye: [10, 5, -10]
-ambient: [1, 1, 1]
-depth: 10
-aaSamples: 9
-dofSamples: 4
+aaSamples: 4
+dofSamples: 9
+transforms:
+  - type: Rotation
+    xAngle: -0.3

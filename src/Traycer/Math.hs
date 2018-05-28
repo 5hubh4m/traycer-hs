@@ -4,10 +4,12 @@ module Traycer.Math
   ( quadratic
   , reflect
   , refract
+  , rotationMatrix
   , epsilon
   ) where
 
 import Linear.V3
+import Linear.Matrix
 import Linear.Vector
 import Linear.Epsilon
 import Linear.Metric
@@ -43,6 +45,21 @@ refract !i !n !m1 !m2
     costi = -dot i n
     sinsqtt = m * m * (1 - costi * costi)
 {-# INLINE refract #-}
+
+-- | Construct the rotation matrix from angles in radian
+rotationMatrix :: (Floating a) => a -> a -> a -> M33 a
+rotationMatrix !x !y !z = rZ !*! rY !*! rX
+  where
+    rX = V3 (V3        1        0        0 )
+            (V3        0  (cos x)  (-sin x))
+            (V3        0  (sin x)   (cos x))
+    rY = V3 (V3  (cos y)        0   (sin y))
+            (V3        0        1        0 )
+            (V3 (-sin y)        0  (cos y) )
+    rZ = V3 (V3  (cos z) (-sin z)        0 )
+            (V3  (sin z)  (cos z)        0 )
+            (V3        0        0        1 )
+{-# INLINE rotationMatrix #-}
 
 -- | A small value close to zero
 epsilon :: (Fractional a) => a

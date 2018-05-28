@@ -23,7 +23,6 @@ module Traycer.Graphics.Color
 
 import Linear.V3
 import Linear.Epsilon
-import Traycer.Math
 import GHC.Generics
 import Control.Lens
 import Data.Word

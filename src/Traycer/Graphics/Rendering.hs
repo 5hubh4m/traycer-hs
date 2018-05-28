@@ -31,8 +31,8 @@ renderImage !c = toImage
     width = fromIntegral $ c^.camera^.windowDim^._x :: Int
     height = fromIntegral $ c^.camera^.windowDim^._y :: Int
     (V2 w h) = pixelSize $ c^.camera
-    aa = jitterSamples (c^.camera^.xVector) (c^.camera^.yVector) (c^.aaSamples) 0 w (-h) 0
-    aperture = jitterSamples (c^.camera^.xVector) (c^.camera^.yVector) (c^.dofSamples) (-3 * w) (3 * w) (-3 * h) (3 * h)
+    aa = jitterSamples (c^.aaSamples) 0 w (-h) 0
+    aperture = jitterSamples (c^.dofSamples) (-3 * w) (3 * w) (-3 * h) (3 * h)
     n = fromIntegral $ length aa * length aperture
 {-# INLINE renderImage #-}
 
@@ -67,15 +67,13 @@ toImage !a = ImageRGB8 $ generateImage gen width height
 {-# INLINE toImage #-}
 
 jitterSamples :: (Enum a, Num a, Fractional a, Integral b)
-              => V3 a
-              -> V3 a
-              -> b
+              => b
               -> a
               -> a
               -> a
               -> a
               -> [V3 a] 
-jitterSamples xv yv num w1 w2 h1 h2 = [m *^ xv + n *^ yv | m <- xsamples, n <- ysamples]
+jitterSamples num w1 w2 h1 h2 = [V3 m n 0 | m <- xsamples, n <- ysamples]
   where
     numSamples = ceiling $ sqrt (fromIntegral num :: Double) :: Int
     xsamples = uniformSamples w1 w2 numSamples
