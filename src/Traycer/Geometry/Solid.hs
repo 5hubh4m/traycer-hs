@@ -9,15 +9,16 @@ module Traycer.Geometry.Solid
   , mkPlane
   , mkSphere
   , mkPoly
+  , mkPolyFromVertices
   , mkCuboid
-  , points
-  , directions
   , changePoints
   , changeDirections
   , center
   , normal
   , radius
   , triangles
+  , boundMin
+  , boundMax
   , scalar
   , collNormal
   , collPoint
@@ -55,7 +56,10 @@ data Solid a = Plane { _center :: !(V3 a)  -- ^ Any point that passes through th
                     , _normal :: !(V3 a) -- ^ The normal `vector` should always be normalised
                     , _radius :: !a      -- ^ Radius of the disk
                     }
-             | Polyhedron { _triangles :: [Triangle a] }
+             | Polyhedron { _triangles :: ![Triangle a]
+                          , _boundMin :: !(V3 a)
+                          , _boundMax :: !(V3 a)
+                          }
              deriving (Show, Read, Eq, Generic)
 
 data Collision a = Collision { _scalar :: !a
@@ -94,31 +98,46 @@ mkTriangle :: (Floating a, Epsilon a, Ord a) => V3 a -> V3 a -> V3 a -> Triangle
 mkTriangle !a !b !c = Triangle a b c $ normalize $ cross (b - a) (c - a)
 {-# INLINE mkTriangle #-}
 
-mkPoly :: (Floating a, Epsilon a, Ord a) => [V3 a] -> Solid a
-mkPoly = Polyhedron . poly
+mkPoly :: (Ord a) => [Triangle a] -> Solid a
+mkPoly !ts = Polyhedron ts (V3 xMin yMin zMin) (V3 xMax yMax zMax)
+  where
+    vs = concatMap (\(Triangle !a !b !c _) -> [a, b, c]) ts
+    xVals = map (^._x) vs
+    yVals = map (^._y) vs
+    zVals = map (^._z) vs
+    xMin = minimum xVals
+    xMax = maximum xVals
+    yMin = minimum yVals
+    yMax = maximum yVals
+    zMin = minimum zVals
+    zMax = maximum zVals 
+{-# INLINE mkPoly #-}
+
+mkPolyFromVertices :: (Floating a, Epsilon a, Ord a) => [V3 a] -> Solid a
+mkPolyFromVertices !vs = mkPoly $ poly vs
   where
     poly [f, g, h] = [mkTriangle f g h]
     poly (f:g:h:rs) = mkTriangle f g h:poly rs
-    poly _ = error "There should be a multiple of 3 vertices."
-{-# INLINE mkPoly #-}
+    poly _ = error "There should be a multiple of 3 vertices."     
+{-# INLINE mkPolyFromVertices #-}
 
 -- | Make a cuboid centered at origin
-mkCuboid :: (Floating a, Epsilon a, Ord a) => a -> a -> a -> Solid a
-mkCuboid xw yw zw
-  | xw < 0 || yw < 0 || zw < 0 = error "Cuboid dimensions can't be < 0."
-  | otherwise = Polyhedron [ mkTriangle p1 p4 p3
-                           , mkTriangle p3 p2 p1
-                           , mkTriangle p1 p2 p7
-                           , mkTriangle p7 p6 p1
-                           , mkTriangle p5 p1 p6
-                           , mkTriangle p5 p4 p1
-                           , mkTriangle p3 p4 p5
-                           , mkTriangle p3 p5 p8
-                           , mkTriangle p8 p1 p6
-                           , mkTriangle p8 p6 p7
-                           , mkTriangle p2 p8 p7
-                           , mkTriangle p2 p3 p8
-                           ]
+mkCuboid :: (Floating a, Epsilon a, Ord a) => V3 a -> Solid a
+mkCuboid (V3 !xw !yw !zw)
+  | xw < 0 || yw < 0 || zw < 0 = error "Cuboid dimensions can't be negative."
+  | otherwise = mkPolyFromVertices [ p1, p4, p3
+                                   , p3, p2, p1
+                                   , p1, p2, p7
+                                   , p7, p6, p1
+                                   , p5, p1, p6
+                                   , p5, p4, p1
+                                   , p3, p4, p5
+                                   , p3, p5, p8
+                                   , p8, p1, p6
+                                   , p8, p6, p7
+                                   , p2, p8, p7
+                                   , p2, p3, p8
+                                   ]
   where
     p1 = V3 (xw / 2) (yw / 2) (zw / 2)
     p2 = V3 (-xw / 2) (yw / 2) (zw / 2)
@@ -128,43 +147,28 @@ mkCuboid xw yw zw
     p6 = V3 (xw / 2) (-yw / 2) (zw / 2)
     p7 = V3 (-xw / 2) (-yw / 2) (zw / 2)
     p8 = V3 (-xw / 2) (-yw / 2) (-zw / 2)
-    
+{-# INLINE mkCuboid #-}
+
 -- | Solid type helper functions for
 --   collision etcetra
 
--- | Get all the points in the solid
-points :: Solid a -> [V3 a]
-points (Sphere !c _) = [c]
-points (Plane !c _) = [c]
-points (Disk !c _ _) = [c]
-points (Polyhedron !ts) = concatMap (\(Triangle !a !b !c _) -> [a, b, c]) ts
-{-# INLINE points #-}
-
--- | Get all the directios in the solid
-directions :: Solid a -> [V3 a]
-directions Sphere{} = []
-directions (Plane _ !n) = [n]
-directions (Disk _ !n _) = [n]
-directions (Polyhedron !ts) = concatMap (\(Triangle _ _ _ !n) -> [n]) ts
-{-# INLINE directions #-}
-
--- | Change all the points in the solid
-changePoints :: Solid a -> (V3 a -> V3 a) -> Solid a
+-- | Change all the points in the solid by the given function
+changePoints :: (Ord a) => Solid a -> (V3 a -> V3 a) -> Solid a
 changePoints s@Sphere{} !f = s&center %~ f
 changePoints s@Plane{} !f = s&center %~ f
 changePoints s@Disk{} !f = s&center %~ f
-changePoints s@Polyhedron{} !f = s&triangles %~ map changeTriPoints
+changePoints (Polyhedron !ts _ _) !f = mkPoly $ map changeTriPoints ts
   where
     changeTriPoints (Triangle !a !b !c !n) = Triangle (f a) (f b) (f c) n
 {-# INLINE changePoints #-}
 
--- | Change all the directions in the solid
-changeDirections :: (Epsilon a, Floating a)
+-- | Change all the directions in the solid by the given function
+changeDirections :: (Epsilon a, Floating a, Ord a)
                  => Solid a -> (V3 a -> V3 a) -> Solid a
 changeDirections s@Sphere{} _ = s
 changeDirections s@Plane{} !f = s&normal %~ normalize . f
 changeDirections s@Disk{} !f = s&normal %~ normalize . f
-changeDirections s@Polyhedron{} !f = s&triangles %~ map changeTriDir
+changeDirections (Polyhedron !ts _ _) !f = mkPoly $ map changeTriDir ts
   where
     changeTriDir (Triangle !a !b !c !n) = Triangle a b c $ normalize $ f n
 {-# INLINE changeDirections #-}
@@ -187,9 +191,9 @@ hit (Disk !c !n !r) !ray
    where
     (denom, t) = hitFlatSurface c n ray
     p = ray *-> t
-hit (Polyhedron !ts) !ray
-  | null validHits = Nothing
-  | otherwise    = Just $ Collision t n a
+hit (Polyhedron !ts !b1 !b2) !ray
+  | not (hitBox b1 b2 ray) || null validHits = Nothing
+  | otherwise                                = Just $ Collision t n a
   where
     hitList = zip ts $ map (\(Triangle x _ _ y) -> hitFlatSurface x y ray) ts
     validHits = filter (\(tr, (d, x)) -> not (nearZero d) && inTri tr x && x >= 0) hitList
@@ -266,7 +270,7 @@ refracted :: (Epsilon a, Floating a, Ord a, Eq a)
                                   --   mu and maybe returns a refracted ray
 refracted Plane{} !r _ _ = Just r
 refracted Disk{} !r _ _ = Just r
-refracted s@(Polyhedron !ts) !r !c !mu
+refracted s@(Polyhedron !ts _ _) !r !c !mu
   | length ts < 4 = Just r
   | otherwise = (\x -> mkRay p x mu) <$>
                 refract (r^.direction) n (r^.medium) mu
@@ -282,6 +286,21 @@ refracted !s !r !c !mu = (\x -> mkRay p x mu) <$>
 
 -- ======================
 -- Temporary functions
+
+hitBox :: (Fractional a, Ord a) => V3 a -> V3 a -> Ray a -> Bool
+hitBox b1 b2 r = not $ txMin > tyMax  || tyMin > txMax  || txyMin > tzMax || tzMin > txyMax
+  where
+    invDir = 1 / r^.direction
+    selectB (V3 a b c) = V3 (if a then b2^._x else b1 ^._x)
+                            (if b then b2^._y else b1^._y)
+                            (if c then b2^._z else b1^._z)
+    s = (< 0) <$> invDir
+    s' = not <$> s
+    (V3 txMin tyMin tzMin) = (selectB s - (r^.origin)) * invDir
+    (V3 txMax tyMax tzMax) = (selectB s' - (r^.origin)) * invDir
+    txyMin = max txMin tyMin
+    txyMax = min txMax tyMax
+{-# INLINE hitBox #-}
 
 hitFlatSurface :: (Num a, Fractional a) => V3 a -> V3 a -> Ray a -> (a, a)
 hitFlatSurface !c !n !ray = (denom, t)

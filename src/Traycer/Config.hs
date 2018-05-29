@@ -61,7 +61,7 @@ mkConfig !bs !ls !a !c !d !aa !dof
   | otherwise              = Config bs ls a c d aa dof
 {-# INLINE mkConfig #-}
 
-mkConfigFromTextures :: (Floating a, Epsilon a, Num b, Ord b, Integral b)
+mkConfigFromTextures :: (Floating a, Epsilon a, Ord a, Num b, Ord b, Integral b)
                      => [Texture a]
                      -> [SolidRef a b]
                      -> [Light a]
@@ -77,9 +77,10 @@ mkConfigFromTextures !txs !srs !ls !a !c !d !aa !dof !ts
   | dof < 1                = error "Invalid number of Depth of field samples."
   | maxIndex > texListSize = error "Texture index greater than bound."
   | minIndex < 0           = error "Texture index less than 0."
-  | otherwise              = Config bs ls a c d aa dof
+  | otherwise              = Config bs ls' a c d aa dof
   where
     indexList = map (^.texture) srs
+    ls' = map (&position %~ (\p -> foldl transformVector p ts)) ls
     minIndex = minimum indexList
     maxIndex = maximum indexList
     texListSize = fromIntegral (length txs) - 1

@@ -4,7 +4,7 @@
 {-# LANGUAGE BangPatterns               #-}
 
 module Traycer.Graphics.Color
-  ( Color
+  ( Color()
   , color
   , mkColor
   , fromV3

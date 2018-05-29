@@ -3,7 +3,7 @@
 {-# LANGUAGE BangPatterns    #-}
 
 module Traycer.Graphics.Texture
-  ( Texture(..)
+  ( Texture()
   , albedo
   , kAmbient
   , kDiffuse

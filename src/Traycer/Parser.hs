@@ -44,19 +44,15 @@ instance (Ord a, Floating a, Epsilon a, FromJSON a) => FromJSON (Solid a) where
       "Plane" -> mkPlane <$> o .: "normal"
       "Disk" -> mkDisk <$> o .: "normal"
                        <*> o .: "radius"
-      "Poly" -> mkPoly <$> o .: "vertices"
-      "Cuboid" -> mkCuboid <$> o .: "xLength"
-                           <*> o .: "yLength"
-                           <*> o .: "zLength"
+      "Poly" -> mkPolyFromVertices <$> o .: "vertices"
+      "Cuboid" -> mkCuboid <$> o .: "size"
       _ -> fail $ "Unknown solid: " ++ typ
 
 instance (Ord a, Floating a, Epsilon a, FromJSON a) => FromJSON (Transform a) where
   parseJSON = withObject "Transform" $ \o -> do
     typ <- o .: "type"
     case typ of
-      "Rotation" -> mkRotation <$> o .:? "xAngle" .!= 0
-                               <*> o .:? "yAngle" .!= 0
-                               <*> o .:? "zAngle" .!= 0
+      "Rotation" -> mkRotation <$> o .:? "angle" .!= 0
                                <*> o .:? "center" .!= 0
       "Translation" -> mkTranslation <$> o .: "vector"
       _ -> fail $ "Unknown transform: " ++ typ

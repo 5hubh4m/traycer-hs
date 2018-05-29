@@ -23,6 +23,6 @@ data Body a = Body { _solid :: !(Solid a)
 makeLenses ''Body
 
 -- | Make body with transforms
-mkBody :: (Floating a, Epsilon a) => Solid a -> Texture a -> [Transform a] -> Body a
-mkBody s t ts = Body (foldl applyTransform s ts) t
+mkBody :: (Floating a, Epsilon a, Ord a) => Solid a -> Texture a -> [Transform a] -> Body a
+mkBody s t ts = Body (foldl transformSolid s ts) t
 {-# INLINE mkBody #-}

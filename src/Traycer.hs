@@ -1,11 +1,13 @@
 module Traycer
-  ( Config, mkConfigFromTextures, mkConfig
-  , Body(..)
+  ( Config(), mkConfigFromTextures, mkConfig
+  , Body()
+  , mkBody
   , Light(..)
-  , mkCamera
-  , mkColor, fromV3, fromRGB, _white, _black, _red, _green, _blue
-  , mkPlain
-  , mkSphere, mkPlane, mkDisk
+  , Camera(), mkCamera
+  , Color(), mkColor, fromV3, fromRGB, _white, _black, _red, _green, _blue
+  , Texture(), mkPlain
+  , Solid(), mkSphere, mkPlane, mkDisk, mkPolyFromVertices, mkCuboid
+  , Transform(), mkRotation, mkTranslation
   , renderImage
   , V3(..)
   , V2(..)
@@ -22,3 +24,4 @@ import Traycer.Graphics.Color
 import Traycer.Graphics.Texture
 import Traycer.Graphics.Rendering
 import Traycer.Geometry.Solid
+import Traycer.Geometry.Transform

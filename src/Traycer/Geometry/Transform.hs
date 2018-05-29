@@ -6,12 +6,11 @@ module Traycer.Geometry.Transform
   ( Transform()
   , mkRotation
   , mkTranslation
-  , rotationX
-  , rotationY
-  , rotationZ
+  , rotation
   , rotationCenter
   , translate
-  , applyTransform
+  , transformSolid
+  , transformVector
   ) where
 
 import Control.Lens
@@ -22,9 +21,7 @@ import GHC.Generics
 import Traycer.Math
 import Traycer.Geometry.Solid
 
-data Transform a = Rotation { _rotationX :: !a
-                            , _rotationY :: !a
-                            , _rotationZ :: !a
+data Transform a = Rotation { _rotation :: !(V3 a)
                             , _rotationCenter :: !(V3 a)
                             }
                  | Translate { _translate :: !(V3 a) }
@@ -32,7 +29,7 @@ data Transform a = Rotation { _rotationX :: !a
 
 makeLenses ''Transform
 
-mkRotation :: a -> a -> a -> V3 a -> Transform a 
+mkRotation :: V3 a -> V3 a -> Transform a 
 mkRotation = Rotation
 {-# INLINE mkRotation #-}
 
@@ -41,13 +38,21 @@ mkTranslation = Translate
 {-# INLINE mkTranslation #-}
 
 -- | Apply a transform on the solid
-applyTransform :: (Epsilon a, Floating a) => Solid a -> Transform a -> Solid a
-applyTransform !s (Translate !t) = changePoints s (+ t)
-applyTransform !s (Rotation !x !y !z !c) = final
+transformSolid :: (Epsilon a, Floating a, Ord a) => Solid a -> Transform a -> Solid a
+transformSolid !s (Translate !t) = changePoints s (+ t)
+transformSolid !s (Rotation (V3 !x !y !z) !c) = final
   where
     translated = changePoints s (+ c)
     rotatedP = changePoints translated (rMatrix !*)
     rotated = changeDirections rotatedP (rMatrix !*)
     final = changePoints rotated (subtract c)
     rMatrix = rotationMatrix x y z
-{-# INLINE applyTransform #-}
+{-# INLINE transformSolid #-}
+
+-- | Apply a transform to an arbitrary vector
+transformVector :: (Floating a) => V3 a -> Transform a -> V3 a
+transformVector !p (Translate !t) = p + t 
+transformVector !p (Rotation (V3 !x !y !z) !c) = (rMatrix !* (p + c)) - c
+  where
+    rMatrix = rotationMatrix x y z
+{-# INLINE transformVector #-}

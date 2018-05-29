@@ -14,6 +14,22 @@ bodies:
       radius: 1
     texture: 2
   - solid:
+      type: Disk
+      normal: [0, 0, -1]
+      radius: 1
+    texture: 2
+    transforms:
+      - type: Translation
+        vector: [0, 1, 1]
+  - solid:
+      type: Disk
+      normal: [-1, 0, 0]
+      radius: 1
+    texture: 2
+    transforms:
+      - type: Translation
+        vector: [1, 1, 0]
+  - solid:
       type: Sphere
       radius: 0.25
     texture: 1
@@ -26,7 +42,7 @@ bodies:
     texture: 0
     transforms:
       - type: Translation
-        vector: [0, 0.25, -0.5]
+        vector: [0, 0.25, 0]
   - solid:
       type: Sphere
       radius: 0.25
@@ -36,23 +52,26 @@ bodies:
         vector: [0.5, 0.25, 0.5]
   - solid:
       type: Cuboid
-      xLength: 0.25
-      yLength: 0.25
-      zLength: 0.25
+      size: [0.25, 0.25, 0.25]
     texture: 4
     transforms:
       - type: Rotation
         yAngle: 0.785
       - type: Translation
         vector: [-0.5, 0.125, 0.5]
+ambient: [0, 0.74, 1]
 lights:
   - intensity: [1, 1, 1]
-    position: [20, 20, -20]
+    position: [-100, 50, -20]
 camera:
-  windowSize: [3, 1.5]
-  windowDim: [600, 300]
-aaSamples: 4
-dofSamples: 9
+  windowSize: [6, 4]
+  windowDim: [1200, 800]
+aaSamples: 16
+dofSamples: 1
 transforms:
+  - type: Translation
+    vector: [0, -1, 0]
   - type: Rotation
-    xAngle: -0.3
+    angle: [0, -0.785, 0]
+  - type: Rotation
+    angle: [-0.785, 0, 0]

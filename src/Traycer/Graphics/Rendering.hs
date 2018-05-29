@@ -7,7 +7,6 @@ module Traycer.Graphics.Rendering
 
 import Linear.V2
 import Linear.V3
-import Linear.Vector
 import Linear.Epsilon
 import Data.Word
 import Data.Array.Repa hiding (map, (*^))
@@ -24,7 +23,7 @@ type RGB8 = (Word8, Word8, Word8)
 renderImage :: (Floating a, RealFrac a, Enum a, Epsilon a, Ord a, Eq a, Integral b)
             => Config a b -> DynamicImage
 renderImage !c = toImage
-                 $ runIdentity . computeP
+                 $ computeS
                  $ transpose
                  $ fromFunction (Z :. height :. width) (pixelColor c aperture aa n)
   where

@@ -3,7 +3,7 @@
 {-# LANGUAGE BangPatterns    #-}
 
 module Traycer.Graphics.Camera
-  ( Camera
+  ( Camera()
   , mkCamera
   , eye
   , windowSize
@@ -61,6 +61,6 @@ pixel2Pos !camera (V2 !x !y)
   where
     xscale = camera^.windowSize^._x / fromIntegral (camera^.windowDim^._x)
     yscale = camera^.windowSize^._y / fromIntegral (camera^.windowDim^._y)
-    xlen = xscale * fromIntegral x - (camera^.windowSize^._x / 2)
+    xlen = (camera^.windowSize^._x / 2) - xscale * fromIntegral x
     ylen = (camera^.windowSize^._y / 2) - yscale * fromIntegral y
 {-# INLINE pixel2Pos #-}
