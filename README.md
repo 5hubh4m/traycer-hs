@@ -6,7 +6,7 @@ A ray-tracer written in Haskell.
 
 #### Shapes
 
-It currently has support for Spheres, Planes, Disks, and Triangle meshes. There are cconvenience functions to create Cuboids and Rectangles using mesh.
+It currently has support for spheres, planes, disks, and triangle meshes. There are cconvenience functions to create cuboids and rectangles using mesh.
 
 #### Textures
 
@@ -27,11 +27,11 @@ It has 6 parameters for controlling objects surface
 
 #### Anti-aliasing and Depth of Field
 
-It supports uniformly spread Anti-aliasing as well as Depth of field. Their quality can be controlled by the config (higher is better). Depth of field should only be used if the scene is spread out in the depth dimension, otherwise the effect is minimal.
+It supports uniformly spread anti-aliasing as well as depth of field. Their quality can be controlled by the config (higher is better). Depth of field should only be used if the scene is spread out in the depth dimension, otherwise the effect is minimal.
 
 #### Transformations
 
-It supports transformations. Currently only translation and rotation are supported. They can be applied to both individual objects and globally (to emulate view transform).
+Currently only translation and rotation are supported. They can be applied to both individual objects and globally (to emulate view transform).
 
 #### Lights
 
@@ -47,19 +47,19 @@ The ray-tracer is configured using a `yaml` config file. For an example, view th
 
 #### Performance
 
-It can render the example scene (three spheres, one cube, two disk mirrors, one transparent mirrors) with 16x Anti-aliasing and Depth of field turned off at resolution of 1200 x 800 in about 16 seconds.
+It can render the example scene (three spheres, one cube, two disk mirrors, one transparent sphere) with 16x anti-aliasing and depth of field turned off at a resolution of 1200 x 800 in about 16 seconds.
 
 ### Future
 
 #### Features
 
-I was hoping to add at least Area-lights and Soft-shadows. Adding caustics will involve changing the entire algorithm to perform both backward and forward ray tracing, or more even more difficult, going physically based. Still haven't decided.
+I was hoping to add at least area-lights and soft-shadows. Adding caustics will involve changing the entire algorithm to perform both backward and forward ray tracing, or more even more difficult, going physically based. Still haven't decided.
 
 #### Performance Improvements
 
 The ray-tracer hasn't been optimised for performance as it is mostly an excercise in learning Haskell. However, I keep coming back to it so I may work on improving performance in the future. The avenues may be:
 
-- Using vectors instead of lists whereever appropriate
+- Using vectors instead of lists wherever appropriate
 - Removing some redundant computation by caching their results
 - Using more advanced ray-world intersection algorithms (Octree/Kd-Tree)
 
