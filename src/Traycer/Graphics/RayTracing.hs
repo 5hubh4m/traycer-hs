@@ -20,18 +20,16 @@ import Traycer.Graphics.Texture
 import Traycer.Geometry.Ray
 import Traycer.Geometry.Solid
 import Traycer.Config
+import Traycer.Util
 
 -- | Checking whether ray collides with any body
 collide :: (Epsilon a, Floating a, Ord a)
         => [Body a]
         -> Ray a
         -> Maybe (Collision a, Body a)
-collide !bs !ray
-  | null hitList = Nothing
-  | otherwise    = Just $ minimumBy (compare `on` fst) unLifted
+collide !bs !ray = foldl step Nothing bs
   where
-    hitList = filter (isJust . fst) $ zip (map ((`hit` ray) . (^.solid)) bs) bs
-    unLifted = map (\(Just x, y) -> (x, y)) hitList
+    step x body = maybeMin x $ (\y -> (y, body)) <$> (body^.solid) `hit` ray
 {-# INLINE collide #-}
 
 -- | The "engine" of the ray-tracer

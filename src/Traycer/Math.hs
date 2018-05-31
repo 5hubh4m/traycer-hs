@@ -35,7 +35,7 @@ reflect !i !n = i - 2 * dot i n *^ n
 
 -- | Calculate the refraction direction of a vector
 --   against a normal vector given mu1 and mu2,
---   the refractive inices of the 2 media
+--   the refractive indices of the 2 media
 refract :: (Epsilon a, Floating a, Ord a) => V3 a -> V3 a -> a -> a -> Maybe (V3 a)
 refract !i !n !m1 !m2
   | sinsqtt > 1 = Nothing

@@ -1,77 +1,77 @@
 materials:
-  - albedo: [1, 0, 0]
-  - albedo: [0, 1, 0]
-  - albedo: [1, 1, 1]
-    kDiffuse: 0.01
-    kSpecular: 0.1
-    reflectance: 0.9
-  - albedo: [0, 0, 1]
-  - albedo: [1, 1, 0]
+- albedo: [1, 0, 0]
+- albedo: [0, 1, 0]
+- albedo: [1, 1, 1]
+  kDiffuse: 0.01
+  kSpecular: 0.1
+  reflectance: 0.9
+- albedo: [0, 0, 1]
+- albedo: [1, 1, 0]
 bodies:
-  - solid:
-      type: Disk
-      normal: [0, 1, 0]
-      radius: 1
-    texture: 2
-  - solid:
-      type: Disk
-      normal: [0, 0, -1]
-      radius: 1
-    texture: 2
-    transforms:
-      - type: Translation
-        vector: [0, 1, 1]
-  - solid:
-      type: Disk
-      normal: [-1, 0, 0]
-      radius: 1
-    texture: 2
-    transforms:
-      - type: Translation
-        vector: [1, 1, 0]
-  - solid:
-      type: Sphere
-      radius: 0.25
-    texture: 1
-    transforms:
-      - type: Translation
-        vector: [0, 0.25, 0.5]
-  - solid:
-      type: Sphere
-      radius: 0.25
-    texture: 0
-    transforms:
-      - type: Translation
-        vector: [0, 0.25, 0]
-  - solid:
-      type: Sphere
-      radius: 0.25
-    texture: 3
-    transforms:
-      - type: Translation
-        vector: [0.5, 0.25, 0.5]
-  - solid:
-      type: Cuboid
-      size: [0.25, 0.25, 0.25]
-    texture: 4
-    transforms:
-      - type: Rotation
-        yAngle: 0.785
-      - type: Translation
-        vector: [-0.5, 0.125, 0.5]
+- solid:
+    type: Disk
+    normal: [0, 1, 0]
+    radius: 1
+  texture: 2
+- solid:
+    type: Disk
+    normal: [0, 0, -1]
+    radius: 1
+  texture: 2
+  transforms:
+  - type: Translation
+    vector: [0, 1, 1]
+- solid:
+    type: Disk
+    normal: [-1, 0, 0]
+    radius: 1
+  texture: 2
+  transforms:
+  - type: Translation
+    vector: [1, 1, 0]
+- solid:
+    type: Sphere
+    radius: 0.25
+  texture: 1
+  transforms:
+  - type: Translation
+    vector: [0, 0.25, 0.5]
+- solid:
+    type: Sphere
+    radius: 0.25
+  texture: 0
+  transforms:
+  - type: Translation
+    vector: [0, 0.25, 0]
+- solid:
+    type: Sphere
+    radius: 0.25
+  texture: 3
+  transforms:
+  - type: Translation
+    vector: [0.5, 0.25, 0.5]
+- solid:
+    type: Cuboid
+    size: [0.25, 0.25, 0.25]
+  texture: 4
+  transforms:
+  - type: Rotation
+    yAngle: 0.785
+  - type: Translation
+    vector: [-0.5, 0.125, 0.5]
 ambient: [0, 0.74, 1]
 lights:
-  - intensity: [1, 1, 1]
-    position: [-100, 50, -20]
+- intensity: [1, 1, 1]
+  position: [-100, 50, -20]
 camera:
   windowSize: [6, 4]
   windowDim: [1200, 800]
 aaSamples: 16
 dofSamples: 1
 transforms:
-  - type: Translation
-    vector: [0, -1, 0]
-  - type: Rotation
-    angle: [0, -0.785, 0]
-  - type: Rotation
-    angle: [-0.785, 0, 0]
+- type: Translation
+  vector: [0, -1, 0]
+- type: Rotation
+  angle: [0, -0.785, 0]
+- type: Rotation
+  angle: [-0.785, 0, 0]

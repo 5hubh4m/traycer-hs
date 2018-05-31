@@ -19,3 +19,7 @@ Also added polyhedrons. It can now ray trace arbitrary convex polyhedrons. There
 Polyhedron intersection is now accelerated using bounding boxes. The ray is first checked for interection with these bounding boxes before performing actual intersection test.
 
 Fixed a bug where lights were not being transformed with the whole scene.
+
+#### 0.3.2
+
+Minor refactor. Added rectangles to lessen the overhead of using cuboids to emulate ractangles, as the former has 12 triangles while the latter has only 2.

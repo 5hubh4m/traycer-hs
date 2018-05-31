@@ -22,6 +22,10 @@ data Body a = Body { _solid :: !(Solid a)
           
 makeLenses ''Body
 
+-- | Dummy instance for Ord (Body a)
+instance (Eq a) => Ord (Body a) where
+  _ <= _ = False
+
 -- | Make body with transforms
 mkBody :: (Floating a, Epsilon a, Ord a) => Solid a -> Texture a -> [Transform a] -> Body a
 mkBody s t ts = Body (foldl transformSolid s ts) t

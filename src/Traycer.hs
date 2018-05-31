@@ -4,9 +4,9 @@ module Traycer
   , mkBody
   , Light(..)
   , Camera(), mkCamera
-  , Color(), mkColor, fromV3, fromRGB, _white, _black, _red, _green, _blue
+  , Color(), mkColor, fromRGB, _white, _black, _red, _green, _blue
   , Texture(), mkPlain
-  , Solid(), mkSphere, mkPlane, mkDisk, mkPolyFromVertices, mkCuboid
+  , Solid(), mkSphere, mkPlane, mkDisk, mkPolyFromVertices, mkCuboid, mkRectangle
   , Transform(), mkRotation, mkTranslation
   , renderImage
   , V3(..)

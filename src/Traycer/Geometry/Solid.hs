@@ -11,6 +11,7 @@ module Traycer.Geometry.Solid
   , mkPoly
   , mkPolyFromVertices
   , mkCuboid
+  , mkRectangle
   , changePoints
   , changeDirections
   , center
@@ -30,14 +31,13 @@ module Traycer.Geometry.Solid
 
 import Control.Lens
 import Data.Foldable
-import Data.Function
 import GHC.Generics
 import Linear.Epsilon
 import Linear.Metric
 import Linear.V3
 import Traycer.Geometry.Ray
 import Traycer.Math
-
+import Traycer.Util
 
 data Triangle a = Triangle { _p1 :: !(V3 a)
                            , _p2 :: !(V3 a)
@@ -98,8 +98,8 @@ mkTriangle :: (Floating a, Epsilon a, Ord a) => V3 a -> V3 a -> V3 a -> Triangle
 mkTriangle !a !b !c = Triangle a b c $ normalize $ cross (b - a) (c - a)
 {-# INLINE mkTriangle #-}
 
-mkPoly :: (Ord a) => [Triangle a] -> Solid a
-mkPoly !ts = Polyhedron ts (V3 xMin yMin zMin) (V3 xMax yMax zMax)
+mkPoly :: (Ord a, Foldable f) => f (Triangle a) -> Solid a
+mkPoly !ts = Polyhedron (toList ts) (V3 xMin yMin zMin) (V3 xMax yMax zMax)
   where
     vs = concatMap (\(Triangle !a !b !c _) -> [a, b, c]) ts
     xVals = map (^._x) vs
@@ -149,6 +149,33 @@ mkCuboid (V3 !xw !yw !zw)
     p8 = V3 (-xw / 2) (-yw / 2) (-zw / 2)
 {-# INLINE mkCuboid #-}
 
+-- | Make a rectangle centered at origin
+mkRectangle :: (Floating a, Epsilon a, Ord a) => V3 a -> Solid a
+mkRectangle (V3 !x !y !z)
+  | x < 0 || y < 0 || z < 0 = error "Rectangle dimensions must be positive."
+  | otherwise = mkPolyFromVertices [ p1, p2, p3
+                                   , p3, p4, p1
+                                   ]
+  where
+    getPoints 0 yw zw = ( V3 0 (yw / 2) (zw / 2),
+                           V3 0 (yw / 2) (-zw / 2),
+                           V3 0 (yw / 2) (-zw / 2),
+                           V3 0 (-yw / 2) (zw / 2)
+                         )
+    getPoints xw 0 zw = ( V3 (xw / 2) 0 (zw / 2),
+                           V3 (xw / 2) 0 (-zw / 2),
+                           V3 (-xw / 2) 0 (-zw / 2),
+                           V3 (-xw / 2) 0 (zw / 2)
+                         )
+    getPoints xw yw 0 = ( V3 (xw / 2) (yw / 2) 0,
+                           V3 (xw / 2) (-yw / 2) 0,
+                           V3 (-xw / 2) (-yw / 2) 0,
+                           V3 (-xw / 2) (yw / 2) 0
+                         )
+    getPoints _ _ _ = error "Rectangle must have one 0 dimension and 2 positive dimensions."
+    (p1, p2, p3, p4) = getPoints x y z
+{-# INLINE mkRectangle #-}
+
 -- | Solid type helper functions for
 --   collision etcetra
 
@@ -191,26 +218,17 @@ hit (Disk !c !n !r) !ray
    where
     (denom, t) = hitFlatSurface c n ray
     p = ray *-> t
-hit (Polyhedron !ts !b1 !b2) !ray
-  | not (hitBox b1 b2 ray) || null validHits = Nothing
-  | otherwise                                = Just $ Collision t n a
+hit (Polyhedron !ts !b1 !b2) !ray = if hitBox b1 b2 ray
+                                    then foldl step Nothing ts
+                                    else Nothing
   where
-    hitList = zip ts $ map (\(Triangle x _ _ y) -> hitFlatSurface x y ray) ts
-    validHits = filter (\(tr, (d, x)) -> not (nearZero d) && inTri tr x && x >= 0) hitList
-    (Triangle !a _ _ !n, (_, t)) = minimumBy (compare `on` (snd . snd)) validHits
-    inTri (Triangle !f !g !h !o) !x = sameSign (dot o $ cross e1 c1)
-                                               (dot o $ cross e2 c2)
-                                               (dot o $ cross e3 c3)
+    step x (Triangle a b c n) = maybeMin x x'
       where
-        p = ray *-> x
-        e1 = g - f
-        e2 = h - g
-        e3 = f - h
-        c1 = p - f
-        c2 = p - g
-        c3 = p - h
-    sameSign x y z = signum x == signum y &&
-                     signum y == signum z
+        (denom, t') = hitFlatSurface a n ray
+        p = ray *-> t'
+        x' = if nearZero denom || t' < 0 || not (insideTriangle a b c n p)
+             then Nothing
+             else Just $ Collision t' n a 
 hit (Sphere !o !r) !ray = case quadratic a b c of
   Nothing -> Nothing
   Just (t0, t1)
@@ -239,12 +257,12 @@ normalAt (Disk !c !n _) !ray _ = if dot n (ray^.origin - c) >= 0
 normalAt Polyhedron{} !ray (Collision _ !n !c) = if dot n (ray^.origin - c) >= 0
                                                  then n
                                                  else -n
-normalAt (Sphere !o !r) !ray !c = normalize $ if norm n >= r
-                                              then n
-                                              else -n
+normalAt (Sphere !o !r) !ray !coll = if dot n (ray^.origin) >= r
+                                     then n
+                                     else -n
   where
-    n = p - o
-    p = ray *-> (c^.scalar)
+    n = normalize $ c - o
+    c = ray *-> (coll^.scalar)
 {-# INLINE normalAt #-}
 
 -- | Get the reflected ray from the intersection
@@ -301,6 +319,20 @@ hitBox b1 b2 r = not $ txMin > tyMax  || tyMin > txMax  || txyMin > tzMax || tzM
     txyMin = max txMin tyMin
     txyMax = min txMax tyMax
 {-# INLINE hitBox #-}
+
+insideTriangle :: (Num a, Ord a) => V3 a -> V3 a -> V3 a -> V3 a -> V3 a -> Bool
+insideTriangle !f !g !h !n !p = sameSign (dot n $ cross e1 c1)
+                                         (dot n $ cross e2 c2)
+                                         (dot n $ cross e3 c3)
+  where
+    e1 = g - f
+    e2 = h - g
+    e3 = f - h
+    c1 = p - f
+    c2 = p - g
+    c3 = p - h
+    sameSign x y z = x * y >= 0 && y * z >= 0
+{-# INLINE insideTriangle #-}
 
 hitFlatSurface :: (Num a, Fractional a) => V3 a -> V3 a -> Ray a -> (a, a)
 hitFlatSurface !c !n !ray = (denom, t)

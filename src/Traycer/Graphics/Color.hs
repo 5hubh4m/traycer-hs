@@ -5,9 +5,7 @@
 
 module Traycer.Graphics.Color
   ( Color()
-  , color
   , mkColor
-  , fromV3
   , fromRGB
   , toRGB
   , r
@@ -22,37 +20,21 @@ module Traycer.Graphics.Color
   ) where
 
 import Linear.V3
-import Linear.Epsilon
-import GHC.Generics
 import Control.Lens
 import Data.Word
 
-newtype Color a = Color { _color :: V3 a }
-                deriving ( Show,
-                           Read,
-                           Eq,
-                           Ord,
-                           Functor,
-                           Applicative,
-                           Num,
-                           Fractional,
-                           Floating,
-                           Epsilon,
-                           Generic
-                         )
-
-makeLenses ''Color
+type Color a = V3 a
 
 r :: Lens' (Color a) a
-r = color . _x
+r = _x
 {-# INLINE r #-}
 
 g :: Lens' (Color a) a 
-g = color ._y
+g = _y
 {-# INLINE g #-}
 
 b :: Lens' (Color a) a
-b = color ._z
+b = _z
 {-# INLINE b #-}
 
 mkColor :: (Num a, Ord a) => a -> a -> a -> Color a
@@ -63,12 +45,8 @@ mkColor !m !n !o
     n > 1 ||
     o < 0 ||
     o > 1     = error "Invalid values of color coordinates."
-  | otherwise = Color $ V3 m n o
+  | otherwise = V3 m n o
 {-# INLINE mkColor #-}
-
-fromV3 :: (Num a, Ord a) => V3 a -> Color a
-fromV3 !v = mkColor (v^._x) (v^._y) (v^._z)
-{-# INLINE fromV3 #-}
 
 fromRGB :: (Num a, Ord a, Fractional a) => Word8 -> Word8 -> Word8 -> Color a
 fromRGB !x !y !z = mkColor (f x) (f y) (f z)
@@ -101,9 +79,9 @@ _blue = mkColor 0 0 1
 {-# INLINE _blue #-}
 
 clip :: (Num a, Ord a) => Color a -> Color a
-clip !c = Color $ f <$> (c^.color)
+clip !c = f <$> c
   where
-    f !x
+    f x
       | x < 0     = 0
       | x > 1     = 1
       | otherwise = x

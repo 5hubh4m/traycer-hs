@@ -6,7 +6,6 @@ module Traycer.Parser
 
 import Data.Yaml
 import Data.Aeson
-import Data.Vector((!))
 import Linear.V3
 import Linear.V2
 import Linear.Epsilon
@@ -29,12 +28,6 @@ instance (FromJSON a) => FromJSON (V3 a) where
 
 instance (FromJSON a) => FromJSON (V2 a) where
   parseJSON = genericParseJSON parseOptions
-
-instance (Num a, Ord a, FromJSON a) => FromJSON (Color a) where
-  parseJSON = withArray "Array of Colors in [0, 1]" $ \arr ->
-    mkColor <$> parseJSON (arr ! 0)
-            <*> parseJSON (arr ! 1)
-            <*> parseJSON (arr ! 2)
   
 instance (Ord a, Floating a, Epsilon a, FromJSON a) => FromJSON (Solid a) where
   parseJSON = withObject "Solid" $ \o -> do
@@ -46,6 +39,7 @@ instance (Ord a, Floating a, Epsilon a, FromJSON a) => FromJSON (Solid a) where
                        <*> o .: "radius"
       "Poly" -> mkPolyFromVertices <$> o .: "vertices"
       "Cuboid" -> mkCuboid <$> o .: "size"
+      "Rectangle" -> mkRectangle <$> o .: "size"
       _ -> fail $ "Unknown solid: " ++ typ
 
 instance (Ord a, Floating a, Epsilon a, FromJSON a) => FromJSON (Transform a) where
